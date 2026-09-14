@@ -1,0 +1,21 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE configurations
+.idea/
+.vscode/
+
+# Instance and local database/secrets
+instance/
+.env
+
+# Uploads / Temp files
+uploads/*
+!uploads/.gitkeep
