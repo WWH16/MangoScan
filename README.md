@@ -1,4 +1,4 @@
-# MangoScan 🥭
+# MangoScan
 
 AI / Computer Vision Mango Quality & Classification System (Flask Web Application).
 

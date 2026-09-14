@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MangoScan - Specimen Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="screen screen-upload">
+    <!-- Main Navigation Header (Cursor 64px Nav) -->
+    <nav class="top-nav" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="brand-logo" aria-label="MangoScan Home">
+                <span class="brand-glyph" aria-hidden="true">■</span>
+                <span class="brand-title">MangoScan</span>
+            </a>
+            <div class="phase-indicator" aria-label="Scan workflow step">
+                <span class="phase-step active"><span>01</span> Upload</span>
+                <span class="phase-divider" aria-hidden="true"></span>
+                <span class="phase-step"><span>02</span> Result</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link active" aria-current="page">
+                    <span style="color: var(--primary);" aria-hidden="true">●</span>
+                    <span>Scanner</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="page-container">
+        <!-- Hero Section (Cursor Editorial Voice) -->
+        <section class="hero-section" aria-labelledby="main-heading">
+            <div class="eyebrow">
+                <span class="eyebrow-pip" aria-hidden="true"></span>
+                <span>Computer vision scanner</span>
+            </div>
+            <h1 id="main-heading" class="hero-title">Mango Disease Classifier</h1>
+            <p class="hero-subtitle">
+                Inspect mango specimens using live camera capture or image uploads to detect Anthracnose, Stem Rot, or confirm healthy fruit.
+            </p>
+        </section>
+
+        {% if error %}
+        <div class="carbon-inline-notification" role="alert">
+            <div class="notification-content">
+                <svg class="icon icon-alert" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>{{ error }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Client-side Inline Error Banner -->
+        <div id="client-error" class="carbon-inline-notification" style="display: none;" role="alert" tabindex="-1">
+            <div class="notification-content">
+                <svg class="icon icon-alert" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div id="client-error-text"></div>
+            </div>
+            <button type="button" id="client-error-close" class="notification-close-btn" aria-label="Dismiss error">
+                <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="scanner-grid">
+            <!-- Inspection Console Card -->
+            <div class="cursor-card">
+                <!-- Mode Switcher Tabs (Accessible WAI-ARIA Tablist) -->
+                <div class="mode-tabs" role="tablist" aria-label="Input mode selection">
+                    <button type="button" class="mode-tab active" id="tab-upload" role="tab" aria-selected="true" aria-controls="upload-panel" tabindex="0">
+                        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                        <span>File Upload</span>
+                    </button>
+                    <button type="button" class="mode-tab" id="tab-camera" role="tab" aria-selected="false" aria-controls="camera-panel" tabindex="-1">
+                        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        <span>Live Camera</span>
+                    </button>
+                </div>
+
+                <!-- 1. File Upload Mode -->
+                <div id="upload-panel" role="tabpanel" aria-labelledby="tab-upload" tabindex="0">
+                    <h2 class="card-title">Upload Specimen Photo</h2>
+                    <p class="card-desc">Supported: JPG, PNG, WEBP &middot; Up to 10 MB</p>
+
+                    <form id="upload-form" action="/predict" method="POST" enctype="multipart/form-data">
+                        <div class="dropzone-container" id="dropzone">
+                            <div class="dropzone-icon" aria-hidden="true">
+                                <svg class="dropzone-svg-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <label for="image-input" class="dropzone-label" id="dropzone-text">Drag and drop photo here or click to upload</label>
+                            <p class="dropzone-hint" id="dropzone-hint">Position the mango with clear lighting against a neutral background</p>
+                            <input type="file" name="image" id="image-input" class="file-input-hidden" accept="image/png, image/jpeg, image/jpg, image/webp" aria-describedby="dropzone-hint">
+                            <input type="file" name="image_camera" id="camera-direct-input" accept="image/*" capture="environment" style="display: none;" aria-hidden="true">
+                        </div>
+
+                        <!-- Client-side Preview Box with Laser Sweep -->
+                        <div class="preview-container" id="preview-container" aria-live="polite">
+                            <div class="scanning-laser preview-laser" id="scanning-laser" aria-hidden="true"></div>
+                            <div class="preview-meta">
+                                <span id="preview-filename">mango_photo.jpg</span>
+                                <div class="preview-meta-right">
+                                    <span id="preview-filesize">0 KB</span>
+                                    <button type="button" id="btn-remove-file" class="preview-remove-btn" aria-label="Remove selected image">Remove</button>
+                                </div>
+                            </div>
+                            <div class="preview-img-wrapper">
+                                <img id="preview-img" class="preview-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E" alt="Selected mango preview">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="button-primary" disabled>
+                            <span id="submit-btn-text">Analyze Mango</span>
+                            <span aria-hidden="true">→</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Live Camera Viewfinder Mode -->
+                <div id="camera-panel" role="tabpanel" aria-labelledby="tab-camera" tabindex="0" style="display: none;">
+                    <h2 class="card-title">Live Camera Viewfinder</h2>
+                    <p class="card-desc">Align the mango within the target reticle, then capture.</p>
+
+                    <div class="camera-viewfinder-container active">
+                        <video id="camera-video" autoplay playsinline aria-label="Live mango specimen camera feed"></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
+                        <div class="scanning-laser camera-laser" id="camera-laser" aria-hidden="true"></div>
+
+                        <!-- Viewfinder HUD Overlays -->
+                        <div class="hud-overlay" aria-hidden="true">
+                            <div class="hud-header">
+                                <span>OPTICAL SENSOR: ACTIVE</span>
+                                <span id="camera-fps">30 FPS</span>
+                            </div>
+                            <div class="hud-reticle"></div>
+                            <div class="hud-footer">
+                                <span>CENTER MANGO IN RETICLE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="capture-btn" class="button-primary" style="margin-top: var(--space-md);">
+                        <span id="capture-btn-text">Capture & Analyze Specimen</span>
+                        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    </button>
+
+                    <!-- In-Place Fallback Card (When HTTP or Permission Denied) -->
+                    <div id="camera-fallback" style="display: none; text-align: center; padding: var(--space-xl) var(--space-md); border: 1px dashed var(--hairline-strong); border-radius: var(--rounded-lg); background-color: var(--canvas-soft); margin-top: var(--space-sm);">
+                        <div style="margin-bottom: var(--space-sm); color: var(--primary);">
+                            <svg class="dropzone-svg-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: var(--space-xs);" id="camera-fallback-title">Direct Camera Capture</div>
+                        <p style="font-size: 13px; color: var(--muted); max-width: 440px; margin: 0 auto var(--space-lg); line-height: 1.5;" id="camera-fallback-desc">
+                            Tap below to launch your phone's camera directly and snap a photo of the mango:
+                        </p>
+                        <button type="button" id="btn-fallback-camera" class="button-primary" style="max-width: 280px; margin: 0 auto; justify-content: center; gap: 8px;">
+                            <span>Snap Photo with Camera</span>
+                            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Info & Inspection Specs Card (Cursor AI Pipeline Design) -->
+            <div class="cursor-card">
+                <h2 class="card-title">Detection Pipeline</h2>
+                <p class="card-desc">Handcrafted feature extraction and RBF SVM classifier architecture.</p>
+
+                <!-- AI Timeline Pastels -->
+                <div class="timeline-pipeline">
+                    <div class="timeline-row">
+                        <span class="timeline-pill timeline-pill-thinking">Thinking</span>
+                        <span class="timeline-desc">Input Normalization</span>
+                        <span class="timeline-metric">128 × 128 RGB</span>
+                    </div>
+
+                    <div class="timeline-row">
+                        <span class="timeline-pill timeline-pill-grep">Grep</span>
+                        <span class="timeline-desc">3D HSV Color Histogram</span>
+                        <span class="timeline-metric">32,768 feat</span>
+                    </div>
+
+                    <div class="timeline-row">
+                        <span class="timeline-pill timeline-pill-read">Read</span>
+                        <span class="timeline-desc">GLCM Texture Features</span>
+                        <span class="timeline-metric">20 feat</span>
+                    </div>
+
+                    <div class="timeline-row">
+                        <span class="timeline-pill timeline-pill-edit">Edit</span>
+                        <span class="timeline-desc">Otsu Morphological Hu</span>
+                        <span class="timeline-metric">7 feat</span>
+                    </div>
+
+                    <div class="timeline-row">
+                        <span class="timeline-pill timeline-pill-done">Done</span>
+                        <span class="timeline-desc">SVM Classification</span>
+                        <span class="timeline-metric">RBF Kernel</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--hairline);">
+                    <div class="telemetry-label" style="margin-bottom: var(--space-xs);">
+                        Classifiable Conditions
+                    </div>
+                    <div class="badge-group">
+                        <span class="condition-badge condition-healthy"><span class="badge-pip" aria-hidden="true"></span> Healthy</span>
+                        <span class="condition-badge condition-anthracnose"><span class="badge-pip" aria-hidden="true"></span> Anthracnose</span>
+                        <span class="condition-badge condition-stem_rot"><span class="badge-pip" aria-hidden="true"></span> Stem Rot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Editorial Footer -->
+    <footer>
+        <div class="footer-container">
+            <div>
+                <span class="footer-title">MangoScan</span>
+                <span> &middot; Postharvest Pathology Detection System</span>
+            </div>
+            <div>
+                <a href="/" class="footer-link">New Scan</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Script: Camera, Tabs, Laser & Client Error Handling -->
+    <script>
+        const tabUpload = document.getElementById('tab-upload');
+        const tabCamera = document.getElementById('tab-camera');
+        const uploadPanel = document.getElementById('upload-panel');
+        const cameraPanel = document.getElementById('camera-panel');
+        const cameraVideo = document.getElementById('camera-video');
+        const cameraCanvas = document.getElementById('camera-canvas');
+        const captureBtn = document.getElementById('capture-btn');
+        const captureBtnText = document.getElementById('capture-btn-text');
+        const cameraLaser = document.getElementById('camera-laser');
+
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneText = document.getElementById('dropzone-text');
+        const fileInput = document.getElementById('image-input');
+        const cameraDirectInput = document.getElementById('camera-direct-input');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+        const previewFilename = document.getElementById('preview-filename');
+        const previewFilesize = document.getElementById('preview-filesize');
+        const btnRemoveFile = document.getElementById('btn-remove-file');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        const scanningLaser = document.getElementById('scanning-laser');
+        const uploadForm = document.getElementById('upload-form');
+
+        const clientError = document.getElementById('client-error');
+        const clientErrorText = document.getElementById('client-error-text');
+        const clientErrorClose = document.getElementById('client-error-close');
+
+        let cameraStream = null;
+
+        function showClientError(msg) {
+            if (clientError && clientErrorText) {
+                clientErrorText.textContent = msg;
+                clientError.style.display = 'flex';
+                clientError.focus();
+            }
+        }
+
+        function hideClientError() {
+            if (clientError) {
+                clientError.style.display = 'none';
+            }
+        }
+
+        if (clientErrorClose) {
+            clientErrorClose.addEventListener('click', hideClientError);
+        }
+
+        if (btnRemoveFile) {
+            btnRemoveFile.addEventListener('click', () => {
+                fileInput.value = '';
+                if (cameraDirectInput) cameraDirectInput.value = '';
+                previewImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+                previewContainer.classList.remove('active');
+                submitBtn.disabled = true;
+                hideClientError();
+                fileInput.focus();
+            });
+        }
+
+        // Accessible Mode Switching
+        function activateTab(tabToActivate, panelToActivate, tabToDeactivate, panelToDeactivate, shouldStartCamera = false) {
+            hideClientError();
+            tabToActivate.classList.add('active');
+            tabToActivate.setAttribute('aria-selected', 'true');
+            tabToActivate.setAttribute('tabindex', '0');
+
+            tabToDeactivate.classList.remove('active');
+            tabToDeactivate.setAttribute('aria-selected', 'false');
+            tabToDeactivate.setAttribute('tabindex', '-1');
+
+            panelToActivate.style.display = 'block';
+            panelToDeactivate.style.display = 'none';
+
+            if (shouldStartCamera) {
+                startCamera();
+            } else {
+                stopCamera();
+            }
+        }
+
+        tabUpload.addEventListener('click', () => {
+            activateTab(tabUpload, uploadPanel, tabCamera, cameraPanel, false);
+        });
+
+        tabCamera.addEventListener('click', () => {
+            activateTab(tabCamera, cameraPanel, tabUpload, uploadPanel, true);
+        });
+
+        // Keyboard navigation for WAI-ARIA tabs (ArrowLeft / ArrowRight)
+        [tabUpload, tabCamera].forEach(tab => {
+            tab.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (tab === tabUpload) {
+                        tabCamera.focus();
+                        tabCamera.click();
+                    }
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (tab === tabCamera) {
+                        tabUpload.focus();
+                        tabUpload.click();
+                    }
+                }
+            });
+        });
+
+        // Start Live Camera Viewfinder
+        async function startCamera() {
+            const cameraViewfinder = document.querySelector('.camera-viewfinder-container');
+            const cameraFallback = document.getElementById('camera-fallback');
+            const captureBtn = document.getElementById('capture-btn');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                if (cameraViewfinder) cameraViewfinder.style.display = 'none';
+                if (captureBtn) captureBtn.style.display = 'none';
+                if (cameraFallback) {
+                    cameraFallback.style.display = 'block';
+                    const fallbackDesc = document.getElementById('camera-fallback-desc');
+                    if (fallbackDesc) {
+                        fallbackDesc.textContent = 'Tap below to launch your phone camera directly and snap a photo of the mango:';
+                    }
+                }
+                return;
+            }
+
+            try {
+                if (cameraFallback) cameraFallback.style.display = 'none';
+                if (cameraViewfinder) cameraViewfinder.style.display = 'block';
+                if (captureBtn) captureBtn.style.display = 'inline-flex';
+
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                cameraVideo.srcObject = cameraStream;
+            } catch (err) {
+                if (cameraViewfinder) cameraViewfinder.style.display = 'none';
+                if (captureBtn) captureBtn.style.display = 'none';
+                if (cameraFallback) {
+                    cameraFallback.style.display = 'block';
+                    const fallbackDesc = document.getElementById('camera-fallback-desc');
+                    if (fallbackDesc) {
+                        fallbackDesc.textContent = 'Could not access device camera (' + err.message + '). Tap below to snap a photo directly:';
+                    }
+                }
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+
+        // Capture from Viewfinder with Performance Downscaling (Max 1024px bounding box)
+        captureBtn.addEventListener('click', async () => {
+            if (!cameraVideo.videoWidth) return;
+
+            hideClientError();
+            captureBtn.disabled = true;
+            captureBtnText.textContent = 'Scanning specimen features...';
+            cameraLaser.classList.add('active');
+
+            const MAX_DIM = 1024;
+            let targetW = cameraVideo.videoWidth;
+            let targetH = cameraVideo.videoHeight;
+            if (targetW > MAX_DIM || targetH > MAX_DIM) {
+                if (targetW > targetH) {
+                    targetH = Math.round((targetH * MAX_DIM) / targetW);
+                    targetW = MAX_DIM;
+                } else {
+                    targetW = Math.round((targetW * MAX_DIM) / targetH);
+                    targetH = MAX_DIM;
+                }
+            }
+
+            cameraCanvas.width = targetW;
+            cameraCanvas.height = targetH;
+            const ctx = cameraCanvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0, targetW, targetH);
+            const base64Image = cameraCanvas.toDataURL('image/jpeg', 0.88);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_base64: base64Image })
+                });
+                const data = await response.json();
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else if (data.error) {
+                    showClientError('Analysis error: ' + data.error);
+                    captureBtn.disabled = false;
+                    captureBtnText.textContent = 'Capture & Analyze Specimen';
+                    cameraLaser.classList.remove('active');
+                }
+            } catch (e) {
+                showClientError('Network error during scan: ' + e.message);
+                captureBtn.disabled = false;
+                captureBtnText.textContent = 'Capture & Analyze Specimen';
+                cameraLaser.classList.remove('active');
+            }
+        });
+
+        const btnFallbackCamera = document.getElementById('btn-fallback-camera');
+        if (btnFallbackCamera) {
+            btnFallbackCamera.addEventListener('click', () => {
+                if (cameraDirectInput) {
+                    cameraDirectInput.click();
+                } else {
+                    fileInput.click();
+                }
+            });
+        }
+
+        // Touch vs Mouse Dropzone text
+        if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+            dropzoneText.textContent = 'Tap to take photo or choose file';
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            hideClientError();
+
+            if (!file.type.startsWith('image/')) {
+                showClientError('Please select a supported image file (JPG, PNG, or WEBP).');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showClientError('Selected image exceeds the 10 MB limit. Please choose a smaller photo.');
+                return;
+            }
+
+            // Ensure Upload tab is active so preview is visible
+            if (uploadPanel.style.display === 'none') {
+                tabUpload.click();
+            }
+
+            previewFilename.textContent = file.name;
+            previewFilesize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewContainer.classList.add('active');
+                submitBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                if (cameraDirectInput) cameraDirectInput.value = '';
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        if (cameraDirectInput) {
+            cameraDirectInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    fileInput.value = '';
+                    handleFile(e.target.files[0]);
+                }
+            });
+        }
+
+        // Trigger Laser Animation on Form Submit
+        uploadForm.addEventListener('submit', (e) => {
+            const hasFile = (fileInput.files && fileInput.files.length > 0) || 
+                            (cameraDirectInput && cameraDirectInput.files && cameraDirectInput.files.length > 0);
+            if (!hasFile) {
+                e.preventDefault();
+                showClientError('Please select or capture a mango photo first.');
+                return;
+            }
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Analyzing features...';
+            scanningLaser.classList.add('active');
+        });
+
+        ['dragenter', 'dragover'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('drag-over');
+            });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                if (cameraDirectInput) cameraDirectInput.value = '';
+                fileInput.files = files;
+                handleFile(files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
