@@ -1,0 +1,9 @@
+{% macro pipeline(list_id=None, done=False) %}
+<ol class="pipeline{% if done %} is-done{% endif %}"{% if list_id %} id="{{ list_id }}"{% endif %}>
+    <li><span class="step-name">Resize photo</span><span class="step-num">128 &times; 128 px</span></li>
+    <li><span class="step-name">HSV colour histogram</span><span class="step-num">32,768</span></li>
+    <li><span class="step-name">GLCM texture</span><span class="step-num">20</span></li>
+    <li><span class="step-name">Hu shape moments</span><span class="step-num">7</span></li>
+    <li><span class="step-name">RBF SVM decides</span><span class="step-num">3 classes</span></li>
+</ol>
+{% endmacro %}

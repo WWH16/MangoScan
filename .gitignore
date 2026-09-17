@@ -29,3 +29,4 @@ static/uploads/*
 
 # Testing / MCP artifacts
 .playwright-mcp/
+.impeccable

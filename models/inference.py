@@ -159,6 +159,28 @@ def predict(image_bgr):
     return label, confidence
 
 
+def merge_boxes(boxes):
+    """Merge overlapping or nested (x, y, w, h) boxes until none overlap; largest first."""
+    boxes = [list(b) for b in boxes]
+    merged = True
+    while merged:
+        merged = False
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                ax, ay, aw, ah = boxes[i]
+                bx, by, bw, bh = boxes[j]
+                if ax <= bx + bw and bx <= ax + aw and ay <= by + bh and by <= ay + ah:
+                    x0, y0 = min(ax, bx), min(ay, by)
+                    x1, y1 = max(ax + aw, bx + bw), max(ay + ah, by + bh)
+                    boxes[i] = [x0, y0, x1 - x0, y1 - y0]
+                    del boxes[j]
+                    merged = True
+                    break
+            if merged:
+                break
+    return sorted((tuple(b) for b in boxes), key=lambda b: b[2] * b[3], reverse=True)
+
+
 def generate_detection_overlay(image_bgr, label):
     """
     Generates authentic computer-vision bounding boxes, contours, and diagnostic
@@ -197,46 +219,59 @@ def generate_detection_overlay(image_bgr, label):
         cv2.line(annotated, (x2, y2), (x2 - corner_len, y2), (72, 161, 36), 5)
         cv2.line(annotated, (x2, y2), (x2, y2 - corner_len), (72, 161, 36), 5)
 
-        cv2.putText(annotated, "STATUS: HEALTHY (MARKET GRADE A)", (x1 + 12, y1 + 35),
-                    cv2.FONT_HERSHEY_SIMPLEX, max(0.65, w / 2200), (72, 161, 36), 2)
 
         telemetry = {
-            "defect_coverage": "0.0% (Clear Surface)",
-            "grade": "Market Grade A (Export Quality)",
+            "defect_coverage": "0.0% (clear surface)",
+            "grade": "Export quality",
+            "grade_letter": "A",
+            "imperative": "Ship it.",
             "action": "Fruit approved for commercial distribution, packaging, and long-term storage."
         }
     elif "anthracnose" in label_lower:
-        # Red bounding boxes around localized necrotic lesion spots
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        valid_cnts = [c for c in contours if cv2.contourArea(c) > (total_pixels * 0.001)]
+        # Red boxes around dark necrotic spots inside the fruit (Otsu mask = fruit body)
+        value = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)[:, :, 2]
+        # Erode the fruit mask so the stem, twig and peel edge are not read as lesions
+        erode_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (max(3, w // 40),) * 2)
+        fruit = cv2.erode(thresh, erode_k) > 0
+        fruit_v = value[fruit]
+        cutoff = 0.6 * float(np.median(fruit_v)) if fruit_v.size else 0
+        lesion = ((value < cutoff) & fruit).astype(np.uint8) * 255
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        lesion = cv2.morphologyEx(lesion, cv2.MORPH_OPEN, kernel)
+        lesion = cv2.dilate(lesion, kernel, iterations=2)
+        contours, _ = cv2.findContours(lesion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Ignore spots touching the photo border: those are background shadows, not lesions
+        margin = 3
+        valid_cnts = []
+        for c in contours:
+            if cv2.contourArea(c) <= total_pixels * 0.0005:
+                continue
+            x, y, cw, ch = cv2.boundingRect(c)
+            if x <= margin or y <= margin or x + cw >= w - margin or y + ch >= h - margin:
+                continue
+            valid_cnts.append(c)
 
-        for cnt in sorted(valid_cnts, key=cv2.contourArea, reverse=True)[:8]:
-            x, y, cw, ch = cv2.boundingRect(cnt)
-            cv2.rectangle(annotated, (x, y), (x + cw, y + ch), (40, 30, 218), 2)
-            cv2.putText(annotated, "LESION", (x, max(22, y - 6)),
-                        cv2.FONT_HERSHEY_SIMPLEX, max(0.45, w / 3500), (40, 30, 218), 2)
-
-        # Outer detection frame
-        cv2.rectangle(annotated, (12, 12), (w - 12, h - 12), (40, 30, 218), 2)
-        cv2.putText(annotated, f"DETECTED: ANTHRACNOSE LESIONS ({len(valid_cnts)} CLUSTERS)", (25, 45),
-                    cv2.FONT_HERSHEY_SIMPLEX, max(0.65, w / 2200), (40, 30, 218), 2)
+        for x, y, cw, ch in merge_boxes([cv2.boundingRect(c) for c in valid_cnts])[:8]:
+            cv2.rectangle(annotated, (x, y), (x + cw, y + ch), (40, 30, 218), max(2, w // 300))
 
         telemetry = {
-            "defect_coverage": f"{min(95.0, area_pct)}% Surface Area",
-            "grade": "Infected Specimen (Cull / Grade C)",
-            "action": "Quarantine fruit. Apply postharvest hot water treatment (48C for 20 min) or prochloraz dip."
+            "defect_coverage": f"{min(95.0, area_pct)}% of surface",
+            "grade": "Infected specimen (cull)",
+            "grade_letter": "C",
+            "imperative": "Quarantine.",
+            "action": "Quarantine fruit. Apply postharvest hot water treatment (48 °C for 20 min) or prochloraz dip."
         }
     else: # Stem_Rot
         # Amber bounding frame on stem shoulder region
         stem_y2 = int(h * 0.45)
         cv2.rectangle(annotated, (int(w * 0.15), int(h * 0.04)), (int(w * 0.85), stem_y2), (0, 180, 240), 3)
-        cv2.putText(annotated, "DETECTED: STEM END ROT DECAY", (int(w * 0.16), int(h * 0.10)),
-                    cv2.FONT_HERSHEY_SIMPLEX, max(0.65, w / 2200), (0, 180, 240), 2)
 
         telemetry = {
-            "defect_coverage": f"{min(85.0, area_pct)}% Stem Shoulder",
-            "grade": "Vascular Tissue Decay (Grade C)",
-            "action": "Trim stem flush with fruit shoulder. Separate from export crates and store in dry ventilation (< 13C)."
+            "defect_coverage": f"{min(85.0, area_pct)}% of stem shoulder",
+            "grade": "Vascular tissue decay",
+            "grade_letter": "C",
+            "imperative": "Trim the stem.",
+            "action": "Trim stem flush with fruit shoulder. Separate from export crates and store in dry ventilation (below 13 °C)."
         }
 
     metrics = {

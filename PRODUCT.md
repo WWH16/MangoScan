@@ -28,12 +28,12 @@ A field-ready computer vision diagnostics tool that ingests mango specimen photo
 
 1. **Instrument-Grade Feedback**: Telemetry, optical metrics, and pathology findings should look and feel like calibrated diagnostic equipment.
 2. **Field-First Usability**: High-contrast typography, large touch targets (≥44px), and seamless mobile camera capture designed for one-handed operation.
-3. **Transparent Pipeline**: Show the 5-stage feature extraction stages (Thinking, Grep, Read, Edit, Done) to establish scientific credibility.
+3. **Transparent Pipeline**: Show the real pipeline stages (resize to 128x128, HSV colour histogram, GLCM texture, Hu shape moments, RBF SVM) to establish scientific credibility.
 4. **Actionable Agronomy**: Every diagnosis must pair with clear, practical sorting or treatment guidance.
 
 ## Accessibility & Inclusion
 
-- WCAG AA compliant contrast ratios against the warm cream canvas (#f7f7f4).
+- WCAG AA compliant contrast ratios against the kraft card surface.
 - Minimum 44px touch targets on mobile viewports.
 - Keyboard-navigable WAI-ARIA tab controls with arrow-key switching.
 - Full reduced-motion safety for scanning laser sweeps and animations.
