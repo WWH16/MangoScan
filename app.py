@@ -7,8 +7,6 @@ import socket
 import binascii
 from flask import Flask, render_template, request, url_for, jsonify, redirect, send_from_directory, session
 from werkzeug.utils import secure_filename
-import cv2
-import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -104,6 +102,9 @@ def predict():
         return error_response("Please choose an image file to upload.", 400)
 
     # Decode image with OpenCV
+    import cv2
+    import numpy as np
+
     np_arr = np.frombuffer(file_bytes, np.uint8)
     image_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR) if np_arr.size else None
     if image_bgr is None:
