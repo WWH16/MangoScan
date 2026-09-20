@@ -5,7 +5,7 @@ import uuid
 import base64
 import socket
 import binascii
-from flask import Flask, render_template, request, url_for, jsonify, redirect
+from flask import Flask, render_template, request, url_for, jsonify, redirect, send_from_directory, session
 from werkzeug.utils import secure_filename
 import cv2
 import numpy as np
@@ -13,18 +13,23 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("MANGOSCAN_SECRET_KEY") or os.urandom(32)
+app.secret_key = os.environ.get("MANGOSCAN_SECRET_KEY") or "mangoscan-production-secret-key-salt"
 
 # 10 MB maximum upload limit
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+# Vercel serverless has a read-only filesystem; writable scratch is in /tmp
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+if IS_VERCEL:
+    UPLOAD_FOLDER = os.path.join("/tmp", "mangoscan_uploads")
+    SCAN_FOLDER = os.path.join("/tmp", "mangoscan_scans")
+else:
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+    SCAN_FOLDER = os.path.join(BASE_DIR, "uploads")
 
-# Scan results are stored outside static/ so they are not publicly served
-SCAN_FOLDER = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(SCAN_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 TOKEN_RE = re.compile(r"^[0-9a-f]{8}$")
@@ -143,13 +148,24 @@ def predict():
         "telemetry": telemetry,
         "metrics": metrics,
     }
-    with open(scan_record_path(token), "w", encoding="utf-8") as f:
-        json.dump(record, f, ensure_ascii=False)
+    try:
+        with open(scan_record_path(token), "w", encoding="utf-8") as f:
+            json.dump(record, f, ensure_ascii=False)
+    except OSError:
+        pass
+
+    session[f"scan_{token}"] = record
 
     redirect_url = url_for("result_view", token=token)
     if request.is_json:
         return jsonify({"success": True, "redirect_url": redirect_url})
     return redirect(redirect_url)
+
+
+@app.route("/scan_uploads/<path:filename>")
+def serve_upload(filename):
+    """Serve uploaded and annotated scan images from the active upload folder."""
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 
 @app.route("/result/<token>")
@@ -158,19 +174,27 @@ def result_view(token):
     if not TOKEN_RE.match(token):
         return render_template("upload.html", error=expired), 404
 
+    record = None
     try:
         with open(scan_record_path(token), encoding="utf-8") as f:
             record = json.load(f)
     except (OSError, ValueError):
+        pass
+
+    if not record:
+        record = session.get(f"scan_{token}")
+
+    if not record:
         return render_template("upload.html", error=expired), 404
 
-    if not os.path.exists(os.path.join(UPLOAD_FOLDER, record["raw_filename"])):
+    raw_file = record.get("raw_filename", "")
+    if not raw_file or not os.path.exists(os.path.join(UPLOAD_FOLDER, raw_file)):
         return render_template("upload.html", error=expired), 404
 
     return render_template(
         "result.html",
-        image_url=url_for("static", filename=f"uploads/{record['raw_filename']}"),
-        annotated_url=url_for("static", filename=f"uploads/{record['ann_filename']}"),
+        image_url=url_for("serve_upload", filename=record["raw_filename"]),
+        annotated_url=url_for("serve_upload", filename=record["ann_filename"]),
         filename=record["filename"],
         prediction=record["label"],
         confidence=record.get("confidence"),

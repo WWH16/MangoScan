@@ -1,0 +1,25 @@
+# Version control and editor
+.git
+.gitignore
+.idea
+.vscode
+
+# Python Virtual Environment and caches
+venv
+.venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Agent and MCP tools
+.agents
+.playwright-mcp
+.impeccable
+
+# Local upload / test scratch files
+uploads/*.json
+!uploads/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
