@@ -16,11 +16,6 @@ __pycache__/
 instance/
 .env
 
-# Large model artifacts (exceeds GitHub 100MB limit)
-*.pkl
-models/*.pkl
-!models/.gitkeep
-
 # Uploads / Temp files
 uploads/*
 !uploads/.gitkeep
