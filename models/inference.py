@@ -1,162 +1,136 @@
+"""
+App-side wrapper around the trained classifier.
+
+`predict.py` and the three `.joblib` files beside it are copied straight out of
+the training notebook's export folder (CELL 18). Nothing in this file
+re-implements segmentation or feature extraction: it imports them, so the app
+and the training run cannot drift apart. After a retrain, copying the export
+folder over `models/` is the whole update.
+
+What this file adds on top of the export:
+  * `predict()` takes an already-decoded BGR array from the upload instead of a
+    path, and reports a confidence when the saved model can produce one.
+  * `overlay_mask()` and `generate_detection_overlay()` draw the diagnostic
+    annotations shown on the result page.
+"""
+
 import os
 import cv2
-import joblib
 import numpy as np
-from skimage.feature import graycomatrix, graycoprops
 
-# Resolve model artifact paths relative to this file's directory
 MODELS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_PATH = os.path.join(MODELS_DIR, "best_model.pkl")
-SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
-ENCODER_PATH = os.path.join(MODELS_DIR, "label_encoder.pkl")
+# Everything the training notebook exports, and the app needs present
+REQUIRED_FILES = (
+    "predict.py",
+    "svm_model.pkl",
+    "scaler.pkl",
+    "label_encoder.pkl",
+)
 
-# Cached artifacts
-_model = None
-_scaler = None
-_label_encoder = None
+_classifier = None
 
+# The overlay works at photo resolution, so it keeps its own copy of the
+# training size rather than importing one at module load
 IMG_SIZE = (128, 128)
+
 
 def load_artifacts():
     """
-    Loads pretrained artifacts with explicit error handling if any .pkl file is missing.
+    Import the exported predictor, with an explicit error if any file is missing.
+
+    `predict.py` loads its `.joblib` files at import time, so the files are
+    checked first: a missing artifact should name itself rather than surface as
+    an import traceback.
     """
-    global _model, _scaler, _label_encoder
+    global _classifier
 
-    missing = []
-    for name, path in [
-        ("best_model.pkl", MODEL_PATH),
-        ("scaler.pkl", SCALER_PATH),
-        ("label_encoder.pkl", ENCODER_PATH),
-    ]:
-        if not os.path.exists(path):
-            missing.append(name)
+    if _classifier is not None:
+        return _classifier
 
+    missing = [n for n in REQUIRED_FILES if not os.path.exists(os.path.join(MODELS_DIR, n))]
     if missing:
         raise FileNotFoundError(
             f"Missing required model artifact(s) in {MODELS_DIR}: {', '.join(missing)}. "
-            f"Please copy {', '.join(missing)} into the models/ folder."
+            f"Copy the contents of the training export folder into the models/ folder."
         )
 
-    if _model is None:
-        _model = joblib.load(MODEL_PATH)
-    if _scaler is None:
-        _scaler = joblib.load(SCALER_PATH)
-    if _label_encoder is None:
-        _label_encoder = joblib.load(ENCODER_PATH)
+    from . import predict as classifier
+    _classifier = classifier
 
-    return _model, _scaler, _label_encoder
+    return _classifier
 
 
 # ============================================================
-# EXACT FEATURE EXTRACTION PIPELINE (FROM TRAINING CELL 10)
-# ============================================================
-
-def color_hist(img, bins=32):
-    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-    hist = cv2.calcHist(
-        [hsv], [0, 1, 2], None,
-        [bins] * 3,
-        [0, 180, 0, 256, 0, 256]
-    )
-    return cv2.normalize(hist, hist).flatten()
-
-
-def glcm_features(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-    glcm = graycomatrix(
-        gray, [1],
-        [0, np.pi/4, np.pi/2, 3*np.pi/4],
-        levels=256,
-        symmetric=True,
-        normed=True
-    )
-
-    props = [
-        "contrast", "dissimilarity",
-        "homogeneity", "energy", "correlation"
-    ]
-
-    return np.hstack([
-        graycoprops(glcm, p).flatten()
-        for p in props
-    ])
-
-
-def hu_features(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-    _, thresh = cv2.threshold(
-        gray, 0, 255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
-    )
-
-    hu = cv2.HuMoments(
-        cv2.moments(thresh)
-    ).flatten()
-
-    return -np.sign(hu) * np.log10(
-        np.abs(hu) + 1e-10
-    )
-
-
-def extract_features(img):
-    return np.hstack([
-        color_hist(img),
-        glcm_features(img),
-        hu_features(img)
-    ])
-
-
-# ============================================================
-# PREDICTION PIPELINE
+# PREDICTION
 # ============================================================
 
 def predict(image_bgr):
     """
-    Takes a BGR image decoded by OpenCV from user upload,
-    replicates training preprocessing (RGB conversion, resize to 128x128),
-    computes the exact feature vector, scales it, and runs inference.
+    Classify a BGR image decoded by OpenCV from a user upload.
+
+    Mirrors `predict.predict_disease()` exactly, differing only in taking a
+    decoded array rather than a file path.
 
     Returns:
         (label: str, confidence: float or None)
     """
-    model, scaler, encoder = load_artifacts()
+    clf = load_artifacts()
 
-    # Preprocessing (matches training CELL 09: BGR->RGB, resize to 128x128)
-    img_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-    img_resized = cv2.resize(img_rgb, IMG_SIZE)
+    img_rgb = cv2.resize(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB), clf.IMG_SIZE)
+    features = clf.extract_features(img_rgb, clf.fruit_mask(img_rgb))
+    scaled = clf.scaler.transform(features.reshape(1, -1))
 
-    # Extract exact features
-    features = extract_features(img_resized)
+    pred_idx = clf.svm_model.predict(scaled)[0]
 
-    # Reshape for scikit-learn (1, n_features)
-    features_2d = features.reshape(1, -1)
-
-    # Scale with loaded scaler
-    scaled_features = scaler.transform(features_2d)
-
-    # Prediction
-    pred_idx = model.predict(scaled_features)[0]
-
-    # Decode class index back to label name
     try:
-        label = encoder.inverse_transform([pred_idx])[0]
+        label = clf.le.inverse_transform([pred_idx])[0]
     except Exception:
         label = str(pred_idx)
 
-    # Confidence estimation
+    # The current SVC is fitted without probability estimates, so this stays
+    # None and the result page hides the confidence row. A model retrained with
+    # probability=True fills it in with no further change here.
     confidence = None
-    if hasattr(model, "predict_proba"):
+    if hasattr(clf.svm_model, "predict_proba"):
         try:
-            probabilities = model.predict_proba(scaled_features)[0]
-            confidence = float(np.max(probabilities))
+            confidence = float(np.max(clf.svm_model.predict_proba(scaled)[0]))
         except Exception:
             confidence = None
 
-    return label, confidence
+    return str(label), confidence
+
+
+# ============================================================
+# DETECTION OVERLAY
+# ============================================================
+
+def overlay_mask(image_bgr, max_side=512):
+    """
+    Fruit silhouette at the photo's own resolution, for the detection overlay.
+
+    The classifier segments the 128x128 training-sized image, which is far too
+    coarse to draw lesion boxes on a phone photo. GrabCut cost scales with pixel
+    count, so this runs on a copy no larger than `max_side` and scales the mask
+    back up.
+    """
+    clf = load_artifacts()
+
+    h, w = image_bgr.shape[:2]
+    scale = min(1.0, max_side / max(h, w))
+    small = (
+        cv2.resize(image_bgr, (max(1, int(w * scale)), max(1, int(h * scale))),
+                   interpolation=cv2.INTER_AREA)
+        if scale < 1.0 else image_bgr
+    )
+
+    mask = clf.fruit_mask(cv2.cvtColor(small, cv2.COLOR_BGR2RGB))
+
+    if mask.shape[:2] != (h, w):
+        mask = cv2.resize(mask, (w, h), interpolation=cv2.INTER_LINEAR)
+        mask = np.where(mask > 127, 255, 0).astype(np.uint8)
+
+    return mask
 
 
 def merge_boxes(boxes):
@@ -181,10 +155,82 @@ def merge_boxes(boxes):
     return sorted((tuple(b) for b in boxes), key=lambda b: b[2] * b[3], reverse=True)
 
 
-def generate_detection_overlay(image_bgr, label):
+def _fruit_region(image_bgr, mask):
     """
-    Generates authentic computer-vision bounding boxes, contours, and diagnostic
-    visual annotations for the detected condition, plus real-time telemetry metrics.
+    Boolean fruit silhouette plus its pixel count.
+
+    Prefers the GrabCut mask. Without one, falls back to an Otsu threshold,
+    eroded so the stem, the twig and the dark peel edge are not counted as fruit
+    body. If neither yields anything, the whole frame is used, so the caller
+    always has a region to measure against.
+    """
+    h, w = image_bgr.shape[:2]
+
+    if mask is not None:
+        fruit = mask > 127
+    else:
+        gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        erode_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (max(3, w // 40),) * 2)
+        fruit = cv2.erode(thresh, erode_k) > 0
+
+    fruit_pixels = int(np.count_nonzero(fruit))
+    if fruit_pixels == 0:
+        fruit = np.ones((h, w), dtype=bool)
+        fruit_pixels = h * w
+
+    return fruit, fruit_pixels
+
+
+def _fruit_core(fruit, segmented):
+    """
+    The fruit interior, pulled back from its outline.
+
+    Segmentation error lives at the boundary: a finger, a leaf or a shadow that
+    GrabCut clipped in appears there as a dark strip and reads as one huge
+    lesion. The Otsu fallback already erodes its own mask, so this applies to
+    the GrabCut mask only.
+    """
+    if not segmented:
+        return fruit
+
+    h, w = fruit.shape[:2]
+    k = max(3, int(min(h, w) * 0.03)) | 1  # odd size, so the kernel has a centre
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+    core = cv2.erode(fruit.astype(np.uint8), kernel) > 0
+
+    return core if np.count_nonzero(core) else fruit
+
+
+def _lesion_mask(image_bgr, fruit):
+    """
+    Peel that is much darker than the fruit's own median brightness.
+
+    The cutoff is relative to the fruit, not to a fixed value, so a photo taken
+    in shade is judged against its own exposure rather than against a studio one.
+    """
+    value = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)[:, :, 2]
+    fruit_v = value[fruit]
+    if fruit_v.size == 0:
+        return np.zeros(value.shape, np.uint8)
+
+    cutoff = 0.6 * float(np.median(fruit_v))
+    lesion = ((value < cutoff) & fruit).astype(np.uint8) * 255
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    return cv2.morphologyEx(lesion, cv2.MORPH_OPEN, kernel)
+
+
+def generate_detection_overlay(image_bgr, label, mask=None):
+    """
+    Generates computer-vision bounding boxes and diagnostic annotations for the
+    detected condition, plus the telemetry shown on the result page.
+
+    `mask` is the GrabCut silhouette from `overlay_mask()`. When it is given,
+    every box and every percentage is measured against the real fruit instead of
+    against the whole photo, so the table, the hand and the background no longer
+    count as peel.
     """
     annotated = image_bgr.copy()
     h, w = image_bgr.shape[:2]
@@ -196,29 +242,34 @@ def generate_detection_overlay(image_bgr, label):
     mean_hue = float(np.mean(hsv[:, :, 0]))
     mean_sat = float(np.mean(hsv[:, :, 1]))
 
-    # Lesion mask via Otsu threshold
-    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    segmented = mask is not None
+    fruit, fruit_pixels = _fruit_region(image_bgr, mask)
+    fx, fy, fw, fh = cv2.boundingRect(fruit.astype(np.uint8))
 
-    total_pixels = h * w
-    defect_pixels = cv2.countNonZero(thresh)
-    area_pct = round((defect_pixels / max(1, total_pixels)) * 100, 1)
+    # Boxes and the bounding box follow the full silhouette; every measurement
+    # follows the interior, where the mask is trustworthy
+    core = _fruit_core(fruit, segmented)
+    core_pixels = max(1, int(np.count_nonzero(core)))
 
+    lesion = _lesion_mask(image_bgr, core)
+    area_pct = round(cv2.countNonZero(lesion) / core_pixels * 100, 1)
+
+    line_w = max(2, w // 300)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     label_lower = (label or "").lower()
 
     if "healthy" in label_lower:
-        # Green bounding box with corner crosshairs
-        x1, y1 = int(w * 0.06), int(h * 0.06)
-        x2, y2 = int(w * 0.94), int(h * 0.94)
+        # Green bounding box around the fruit, with corner crosshairs
+        pad = int(max(fw, fh) * 0.04)
+        x1, y1 = max(0, fx - pad), max(0, fy - pad)
+        x2, y2 = min(w - 1, fx + fw + pad), min(h - 1, fy + fh + pad)
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (72, 161, 36), 3)
 
-        corner_len = int(min(w, h) * 0.08)
+        corner_len = int(min(x2 - x1, y2 - y1) * 0.12)
         cv2.line(annotated, (x1, y1), (x1 + corner_len, y1), (72, 161, 36), 5)
         cv2.line(annotated, (x1, y1), (x1, y1 + corner_len), (72, 161, 36), 5)
         cv2.line(annotated, (x2, y2), (x2 - corner_len, y2), (72, 161, 36), 5)
         cv2.line(annotated, (x2, y2), (x2, y2 - corner_len), (72, 161, 36), 5)
-
 
         telemetry = {
             "defect_coverage": "0.0% (clear surface)",
@@ -228,31 +279,26 @@ def generate_detection_overlay(image_bgr, label):
             "action": "Fruit approved for commercial distribution, packaging, and long-term storage."
         }
     elif "anthracnose" in label_lower:
-        # Red boxes around dark necrotic spots inside the fruit (Otsu mask = fruit body)
-        value = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)[:, :, 2]
-        # Erode the fruit mask so the stem, twig and peel edge are not read as lesions
-        erode_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (max(3, w // 40),) * 2)
-        fruit = cv2.erode(thresh, erode_k) > 0
-        fruit_v = value[fruit]
-        cutoff = 0.6 * float(np.median(fruit_v)) if fruit_v.size else 0
-        lesion = ((value < cutoff) & fruit).astype(np.uint8) * 255
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        lesion = cv2.morphologyEx(lesion, cv2.MORPH_OPEN, kernel)
-        lesion = cv2.dilate(lesion, kernel, iterations=2)
-        contours, _ = cv2.findContours(lesion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # Ignore spots touching the photo border: those are background shadows, not lesions
-        margin = 3
-        valid_cnts = []
+        # Red boxes around the dark necrotic spots on the peel
+        spots = cv2.dilate(lesion, kernel, iterations=2)
+        contours, _ = cv2.findContours(spots, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        min_area = core_pixels * 0.0008
+        boxes = []
         for c in contours:
-            if cv2.contourArea(c) <= total_pixels * 0.0005:
+            if cv2.contourArea(c) <= min_area:
                 continue
             x, y, cw, ch = cv2.boundingRect(c)
-            if x <= margin or y <= margin or x + cw >= w - margin or y + ch >= h - margin:
-                continue
-            valid_cnts.append(c)
+            # Without a segmentation mask, spots touching the photo border are
+            # background shadow rather than lesion, so drop them
+            if not segmented:
+                margin = 3
+                if x <= margin or y <= margin or x + cw >= w - margin or y + ch >= h - margin:
+                    continue
+            boxes.append((x, y, cw, ch))
 
-        for x, y, cw, ch in merge_boxes([cv2.boundingRect(c) for c in valid_cnts])[:8]:
-            cv2.rectangle(annotated, (x, y), (x + cw, y + ch), (40, 30, 218), max(2, w // 300))
+        for x, y, cw, ch in merge_boxes(boxes)[:8]:
+            cv2.rectangle(annotated, (x, y), (x + cw, y + ch), (40, 30, 218), line_w)
 
         telemetry = {
             "defect_coverage": f"{min(95.0, area_pct)}% of surface",
@@ -261,13 +307,21 @@ def generate_detection_overlay(image_bgr, label):
             "imperative": "Quarantine.",
             "action": "Quarantine fruit. Apply postharvest hot water treatment (48 °C for 20 min) or prochloraz dip."
         }
-    else: # Stem_Rot
-        # Amber bounding frame on stem shoulder region
-        stem_y2 = int(h * 0.45)
-        cv2.rectangle(annotated, (int(w * 0.15), int(h * 0.04)), (int(w * 0.85), stem_y2), (0, 180, 240), 3)
+    else:  # Stem_Rot
+        # Amber frame on the stem shoulder: the top 45% of the fruit itself
+        shoulder_h = max(1, int(fh * 0.45))
+        cv2.rectangle(annotated, (fx, fy), (fx + fw, fy + shoulder_h), (0, 180, 240), 3)
+
+        shoulder = np.zeros((h, w), dtype=bool)
+        shoulder[fy:fy + shoulder_h, fx:fx + fw] = True
+        shoulder &= core
+        shoulder_pixels = max(1, int(np.count_nonzero(shoulder)))
+        shoulder_pct = round(
+            int(np.count_nonzero((lesion > 0) & shoulder)) / shoulder_pixels * 100, 1
+        )
 
         telemetry = {
-            "defect_coverage": f"{min(85.0, area_pct)}% of stem shoulder",
+            "defect_coverage": f"{min(85.0, shoulder_pct)}% of stem shoulder",
             "grade": "Vascular tissue decay",
             "grade_letter": "C",
             "imperative": "Trim the stem.",

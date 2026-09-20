@@ -1,1 +1,2 @@
-# Place best_model.pkl, scaler.pkl, and label_encoder.pkl in this directory
+# Model artifacts exported by the training notebook live here:
+#   svm_model.pkl, scaler.pkl, label_encoder.pkl, predict.py

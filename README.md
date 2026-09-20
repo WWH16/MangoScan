@@ -29,4 +29,7 @@ Options:
 - `python app.py --debug`: Flask debug mode, bound to `127.0.0.1` only.
 - Set `MANGOSCAN_SECRET_KEY` to use a fixed secret key.
 
-Model artifacts (`best_model.pkl`, `scaler.pkl`, `label_encoder.pkl`) are not in git; copy them into `models/`.
+Model artifacts live in `models/`: `svm_model.pkl`, `scaler.pkl`, `label_encoder.pkl` and
+`predict.py`, copied straight from the training notebook's export folder. `models/inference.py`
+imports `predict.py` rather than reimplementing it, so a retrain only needs the export folder copied
+over `models/` again.

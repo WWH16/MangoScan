@@ -112,7 +112,12 @@ def predict():
     try:
         from models import inference
         label, confidence = inference.predict(image_bgr)
-        annotated_bgr, telemetry, metrics = inference.generate_detection_overlay(image_bgr, label)
+        # Segment again at display resolution so the boxes and percentages are
+        # measured against the fruit rather than against the whole photo
+        mask = inference.overlay_mask(image_bgr)
+        annotated_bgr, telemetry, metrics = inference.generate_detection_overlay(
+            image_bgr, label, mask=mask
+        )
     except FileNotFoundError as e:
         return error_response(f"Model files not found in models/: {e}", 500)
     except Exception as e:
