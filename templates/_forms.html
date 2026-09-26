@@ -1,0 +1,62 @@
+{# Shared pieces for the account forms #}
+
+{% macro form_error(errors) %}
+{% if errors.form %}
+<div class="note note-error" role="alert">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
+    <p>{{ errors.form }}</p>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro field(name, label, errors, type="text", value="", autocomplete=None, hint=None, autofocus=False) %}
+<div class="field{% if errors[name] %} has-error{% endif %}">
+    <label for="f-{{ name }}">{{ label }}</label>
+    {% if type == "password" %}
+    <div class="password-wrap">
+        <input id="f-{{ name }}" name="{{ name }}" type="password" required
+               {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+               {% if autofocus %}autofocus{% endif %}
+               aria-describedby="{% if hint and not errors[name] %}f-{{ name }}-hint {% endif %}{% if errors[name] %}f-{{ name }}-err{% endif %}"
+               {% if errors[name] %}aria-invalid="true"{% endif %}>
+        <button type="button" class="reveal" data-reveal="f-{{ name }}" aria-pressed="false">Show</button>
+    </div>
+    {% else %}
+    <input id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value }}" required
+           {% if type == "email" %}inputmode="email" autocapitalize="none" spellcheck="false"{% endif %}
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+           {% if autofocus %}autofocus{% endif %}
+           aria-describedby="{% if hint and not errors[name] %}f-{{ name }}-hint {% endif %}{% if errors[name] %}f-{{ name }}-err{% endif %}"
+           {% if errors[name] %}aria-invalid="true"{% endif %}>
+    {% endif %}
+    {% if hint and not errors[name] %}<p class="field-hint" id="f-{{ name }}-hint">{{ hint }}</p>{% endif %}
+    {% if errors[name] %}<p class="field-error" id="f-{{ name }}-err">{{ errors[name] }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro submit(label) %}
+<button type="submit" class="btn btn-primary btn-block">
+    <span>{{ label }}</span>
+    <svg class="icon icon-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+</button>
+{% endmacro %}
+
+{% macro reveal_script() %}
+<script>
+document.querySelectorAll('[data-reveal]').forEach((btn) => {
+    const input = document.getElementById(btn.dataset.reveal);
+    btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Hide' : 'Show';
+        btn.setAttribute('aria-pressed', String(show));
+        input.focus();
+    });
+});
+document.querySelectorAll('form.auth-form').forEach((form) => form.addEventListener('submit', () => {
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Please wait…';
+}));
+</script>
+{% endmacro %}

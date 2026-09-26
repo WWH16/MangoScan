@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}MangoScan &middot; My scans{% endblock %}
+{% block body_class %}screen-scans{% endblock %}
+
+{% block content %}
+<section class="scans" aria-labelledby="scans-heading">
+    <div class="scans-head">
+        <h1 id="scans-heading" class="headline">My scans.</h1>
+        <p class="lede">{{ user.name or user.email }}{% if user.name %} &middot; {{ user.email }}{% endif %}</p>
+    </div>
+
+    {% if load_failed %}
+    <div class="note note-error" role="alert">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
+        <p>Your scans could not be loaded. Check the connection and reload the page.</p>
+    </div>
+    {% elif not rows %}
+    <div class="empty">
+        <p class="empty-title">No saved scans yet.</p>
+        <p class="tip">Every mango you check while logged in shows up here.</p>
+    </div>
+    {% else %}
+    <ul class="scan-list">
+        {% for r in rows %}
+        {% set lower = (r.label or '') | lower %}
+        <li>
+            <a class="scan-row" href="{{ url_for('accounts.scan_detail', scan_id=r.id) }}">
+                {% if r.thumb %}<img src="{{ r.thumb }}" alt="" width="72" height="72" loading="lazy">{% else %}<span class="thumb-missing" aria-hidden="true"></span>{% endif %}
+                <span class="scan-row-text">
+                    <span class="scan-word">{{ r.word }}</span>
+                    <span class="scan-meta">{{ r.date }}{% if r.telemetry and r.telemetry.imperative %} &middot; {{ r.telemetry.imperative }}{% endif %}</span>
+                </span>
+                {% if 'healthy' not in lower %}<span class="scan-flag">Disease</span>{% endif %}
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}" class="btn btn-primary btn-take scans-cta">
+        <span>Scan a mango</span>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4H9L7 7H3v13h18V7h-4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    </a>
+
+    <form method="POST" action="{{ url_for('accounts.logout') }}" class="logout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="link-btn">Log out</button>
+    </form>
+</section>
+{% endblock %}

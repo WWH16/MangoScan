@@ -59,6 +59,11 @@
                 <span>Scan another mango</span>
                 <svg class="icon icon-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
             </a>
+            {% if saved_id %}
+            <p class="save-line">Saved to your scans{% if saved_date %} &middot; {{ saved_date }}{% endif %}. <a href="{{ url_for('accounts.scans') }}">See all</a></p>
+            {% elif accounts_enabled and not user %}
+            <p class="save-line"><a href="{{ url_for('accounts.login') }}">Log in</a> or <a href="{{ url_for('accounts.signup') }}">create an account</a> to save your scans.</p>
+            {% endif %}
         </div>
     </section>
 
@@ -105,6 +110,14 @@
         <p class="more-note">Coverage is an Otsu-threshold estimate of dark peel area, not a lab measurement.</p>
     </div>
 </details>
+
+{% if saved_id %}
+<form method="POST" action="{{ url_for('accounts.scan_delete', scan_id=saved_id) }}" class="delete-form"
+      onsubmit="return confirm('Delete this scan and its photos? This cannot be undone.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="link-btn">Delete this scan</button>
+</form>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

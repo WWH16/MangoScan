@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}MangoScan &middot; {{ title }}{% endblock %}
+{% block body_class %}screen-auth{% endblock %}
+
+{% block content %}
+<section class="auth" aria-labelledby="auth-heading">
+    <h1 id="auth-heading" class="headline">{{ heading }}</h1>
+    {% if body %}<p class="lede">{{ body }}</p>{% endif %}
+    <div class="minor-actions">
+        <a class="link-btn" href="{{ url_for('index') }}">Scan a mango</a>
+        {% if accounts_enabled and not user %}<a class="link-btn" href="{{ url_for('accounts.login') }}">Log in</a>{% endif %}
+    </div>
+</section>
+{% endblock %}

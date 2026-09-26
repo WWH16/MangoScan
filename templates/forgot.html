@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_forms.html" import form_error, field, submit, reveal_script %}
+
+{% block title %}MangoScan &middot; Forgot password{% endblock %}
+{% block body_class %}screen-auth{% endblock %}
+
+{% block content %}
+<section class="auth" aria-labelledby="auth-heading">
+    <h1 id="auth-heading" class="headline">Forgot your password?</h1>
+    <p class="lede">Enter your email. We will send a link to set a new password.</p>
+
+    {{ form_error(errors) }}
+
+    <form class="auth-form" method="POST" action="{{ url_for('accounts.forgot') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {{ field("email", "Email", errors, type="email", value=form.email, autocomplete="email", autofocus=True) }}
+        {{ submit("Send the link") }}
+    </form>
+
+    <div class="minor-actions">
+        <a class="link-btn" href="{{ url_for('accounts.login') }}">Back to log in</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}{{ reveal_script() }}{% endblock %}

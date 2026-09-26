@@ -5,19 +5,43 @@ import uuid
 import base64
 import socket
 import binascii
-from flask import Flask, render_template, request, url_for, jsonify, redirect, send_from_directory, session
+from datetime import timedelta
+from flask import Flask, render_template, request, url_for, jsonify, redirect, send_from_directory, session, g
 from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("MANGOSCAN_SECRET_KEY") or "mangoscan-production-secret-key-salt"
+# Local settings (Supabase keys, secret key) live in .env; on Vercel they come from the project settings
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, ".env"))
+except ImportError:
+    pass
 
-# 10 MB maximum upload limit
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+import accounts
 
 # Vercel serverless has a read-only filesystem; writable scratch is in /tmp
 IS_VERCEL = bool(os.environ.get("VERCEL"))
+
+app = Flask(__name__)
+
+# The session cookie carries the user's login, so the signing key must be secret and stable
+secret_key = os.environ.get("MANGOSCAN_SECRET_KEY", "").strip()
+if not secret_key:
+    if IS_VERCEL:
+        raise RuntimeError("Set MANGOSCAN_SECRET_KEY in the Vercel project's environment variables.")
+    secret_key = "dev-only-insecure-key-set-MANGOSCAN_SECRET_KEY"
+app.secret_key = secret_key
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=IS_VERCEL,
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+)
+app.register_blueprint(accounts.bp)
+
+# 10 MB maximum upload limit
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 if IS_VERCEL:
     UPLOAD_FOLDER = os.path.join("/tmp", "mangoscan_uploads")
     SCAN_FOLDER = os.path.join("/tmp", "mangoscan_scans")
@@ -54,6 +78,9 @@ def scan_record_path(token):
 
 @app.route("/")
 def index():
+    # Supabase falls back to the site root when an email link's redirect is not allowed
+    if request.args.get("token_hash"):
+        return redirect(url_for("accounts.confirm", **request.args))
     return render_template("upload.html")
 
 
@@ -155,9 +182,20 @@ def predict():
     except OSError:
         pass
 
+    # Keep only the latest scan in the cookie; the login tokens share its 4 KB limit
+    for key in [k for k in session if k.startswith("scan_")]:
+        session.pop(key)
     session[f"scan_{token}"] = record
 
+    # Signed-in users get the scan saved to their account and land on the saved copy
     redirect_url = url_for("result_view", token=token)
+    if g.get("user"):
+        mime = {".png": "image/png", ".webp": "image/webp"}
+        raw_type = mime.get(os.path.splitext(raw_filename)[1].lower(), "image/jpeg")
+        ann_type = mime.get(ext.lower(), "image/jpeg")
+        saved_id = accounts.save_scan(g.user, token, record, file_bytes, raw_type, encoded.tobytes(), ann_type)
+        if saved_id:
+            redirect_url = url_for("accounts.scan_detail", scan_id=saved_id)
     if request.is_json:
         return jsonify({"success": True, "redirect_url": redirect_url})
     return redirect(redirect_url)

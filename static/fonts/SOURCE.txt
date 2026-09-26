@@ -1,3 +1,2 @@
-Archivo (variable, wdth 62-125, wght 100-900): SIL Open Font License 1.1.
-JetBrains Mono (variable, wght 400-800): SIL Open Font License 1.1.
-Both downloaded from Google Fonts (latin subset) for self-hosting.
+Geist (variable, wght 100-900) and Geist Mono (variable, wght 400-600): SIL Open Font License 1.1.
+Downloaded from Google Fonts (latin subset) for self-hosting.

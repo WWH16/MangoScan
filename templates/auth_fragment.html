@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}MangoScan &middot; Confirming{% endblock %}
+{% block body_class %}screen-auth{% endblock %}
+
+{% block content %}
+<section class="auth" aria-labelledby="auth-heading">
+    <h1 id="auth-heading" class="headline" tabindex="-1">Confirming<span class="dots" aria-hidden="true"></span></h1>
+    <p class="lede" id="fragment-msg" role="status">One moment.</p>
+    <form id="fragment-form" method="POST" action="{{ url_for('accounts.confirm') }}" hidden>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="access_token">
+        <input type="hidden" name="refresh_token">
+        <input type="hidden" name="expires_at">
+        <input type="hidden" name="type">
+    </form>
+    <div class="minor-actions" id="fragment-links" hidden>
+        <a class="link-btn" href="{{ url_for('accounts.login') }}">Log in</a>
+        <a class="link-btn" href="{{ url_for('accounts.forgot') }}">Get a new link</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const params = new URLSearchParams(location.hash.slice(1));
+    // Drop the tokens from the address bar and history right away
+    history.replaceState(null, '', location.pathname);
+    const form = document.getElementById('fragment-form');
+    if (params.get('access_token') && params.get('refresh_token')) {
+        ['access_token', 'refresh_token', 'expires_at', 'type'].forEach((k) => { form.elements[k].value = params.get(k) || ''; });
+        form.submit();
+        return;
+    }
+    const heading = document.getElementById('auth-heading');
+    heading.textContent = 'This link does not work.';
+    document.getElementById('fragment-msg').textContent =
+        params.get('error_description') || 'It may have expired or been used already. Log in, or ask for a new link.';
+    document.getElementById('fragment-links').hidden = false;
+    heading.focus();
+})();
+</script>
+{% endblock %}

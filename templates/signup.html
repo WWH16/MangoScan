@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_forms.html" import form_error, field, submit, reveal_script %}
+
+{% block title %}MangoScan &middot; Create an account{% endblock %}
+{% block body_class %}screen-auth{% endblock %}
+
+{% block content %}
+<section class="auth" aria-labelledby="auth-heading">
+    <h1 id="auth-heading" class="headline">Create an account.</h1>
+    <p class="lede">Free. Every mango you scan is saved, with its photo and what to do.</p>
+
+    {{ form_error(errors) }}
+
+    <form class="auth-form" method="POST" action="{{ url_for('accounts.signup', next=request.args.get('next')) }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {{ field("name", "Full name", errors, value=form.name, autocomplete="name", autofocus=True) }}
+        {{ field("email", "Email", errors, type="email", value=form.email, autocomplete="email") }}
+        {{ field("password", "Password", errors, type="password", autocomplete="new-password", hint="At least 8 characters.") }}
+        {{ submit("Create account") }}
+    </form>
+
+    <div class="minor-actions">
+        <a class="link-btn" href="{{ url_for('accounts.login', next=request.args.get('next')) }}">I already have an account</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}{{ reveal_script() }}{% endblock %}
