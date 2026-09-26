@@ -26,3 +26,10 @@ static/uploads/*
 .playwright-mcp/
 .impeccable
 .agents
+# Images (size): keep new images out of the repo.
+# Already-tracked sample photos stay tracked.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif

@@ -1,58 +1,84 @@
 ---
 name: MangoScan
-description: Field mango disease scanner, lettered like a palengke price board.
+description: Field mango disease scanner, set like a monochrome type-specimen sheet.
 colors:
-  kraft: "#cda36a"
-  kraft-liner: "#b88c52"
-  plywood: "#e4d6bd"
-  ink: "#1c1814"
-  ink-soft: "#3d3124"
-  marker-red: "#a01d12"
-  marker-green: "#22531d"
-  highlighter: "#f6d312"
-  tape: "rgb(244 236 214 / 0.86)"
-  photo-paper: "#fbf8f1"
-  button-ink-text: "#f4e7cf"
+  paper: "#f3f2ee"
+  paper-raised: "#fbfaf7"
+  paper-sunk: "#e9e7e1"
+  ink: "#121212"
+  ink-2: "#363636"
+  ink-3: "#5a5a5a"
+  rule: "rgb(18 18 18 / 0.16)"
+  rule-strong: "rgb(18 18 18 / 0.42)"
+  blue: "#1d3fc0"
+  blue-deep: "#152f96"
+  blue-wash: "#e6eaf7"
 typography:
-  display:
-    fontFamily: "Permanent Marker, Segoe Print, cursive"
-    fontSize: "clamp(3rem, 14vw, 5.25rem)"
-    fontWeight: 400
-    lineHeight: 1.05
-    letterSpacing: "0"
+  headline:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "clamp(2.25rem, 10vw, 4rem)"
+    fontWeight: 500
+    lineHeight: 1.12
+    letterSpacing: "-0.03em"
   verdict:
-    fontFamily: "Permanent Marker, Segoe Print, cursive"
-    fontSize: "min(6rem, 12.5cqi)"
-    fontWeight: 400
-    lineHeight: 0.95
+    fontFamily: "Archivo, Arial Narrow, sans-serif"
+    fontSize: "min(6rem, 17cqi)"
+    fontWeight: 800
+    fontStretch: "88%"
+    lineHeight: 0.92
+    letterSpacing: "-0.035em"
   imperative:
-    fontFamily: "Permanent Marker, Segoe Print, cursive"
-    fontSize: "clamp(1.9rem, 8vw, 2.75rem)"
-    fontWeight: 400
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "clamp(1.625rem, 6vw, 2.25rem)"
+    fontWeight: 500
+    lineHeight: 1.15
   body:
-    fontFamily: "Barlow Semi Condensed, Arial Narrow, sans-serif"
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.6
+    fontFeature: "\"tnum\" 1, \"zero\" 1"
+  lede:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: "1.0625rem"
     fontWeight: 400
-    lineHeight: 1.5
-    fontFeature: "\"tnum\" 1"
-  lede:
-    fontFamily: "Barlow Semi Condensed, Arial Narrow, sans-serif"
-    fontSize: "1.1875rem"
-    fontWeight: 400
-    lineHeight: 1.45
+    lineHeight: 1.65
   label:
-    fontFamily: "Barlow Semi Condensed, Arial Narrow, sans-serif"
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "0.8125rem"
+    fontWeight: 600
+    letterSpacing: "0.12em"
+  button:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: "1rem"
     fontWeight: 600
-    letterSpacing: "0.06em"
-  button:
-    fontFamily: "Barlow Semi Condensed, Arial Narrow, sans-serif"
-    fontSize: "1.1875rem"
+  small:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "0.75rem"
+    fontWeight: 400
+  wordmark:
+    fontFamily: "Archivo, Arial Narrow, sans-serif"
+    fontSize: "1.5rem"
     fontWeight: 700
-    letterSpacing: "0.05em"
+  step:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "0.9375rem"
+    fontWeight: 600
+  reading-value:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "1.125rem"
+    fontWeight: 700
+  reading-title:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "1.375rem"
+    fontWeight: 600
+  fine:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "0.875rem"
+    fontWeight: 400
 rounded:
-  board: "3px"
-  tape: "1px"
+  control: "2px"
+  knob: "50%"
 spacing:
   "1": "4px"
   "2": "8px"
@@ -62,183 +88,160 @@ spacing:
   "6": "32px"
   "7": "48px"
   "8": "64px"
+  "9": "96px"
 components:
-  button-ink:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.button-ink-text}"
+  button-primary:
+    backgroundColor: "{colors.blue}"
+    textColor: "#ffffff"
     typography: "{typography.button}"
-    rounded: "{rounded.board}"
+    rounded: "{rounded.control}"
     padding: "0 24px"
     height: "56px"
-  button-ink-hover:
-    backgroundColor: "#000000"
-  button-ink-disabled:
-    backgroundColor: "{colors.ink-soft}"
-  button-tape:
-    backgroundColor: "{colors.tape}"
+  button-primary-hover:
+    backgroundColor: "{colors.blue-deep}"
+  tab:
+    backgroundColor: "transparent"
     textColor: "{colors.ink}"
     typography: "{typography.button}"
-    padding: "0 24px"
-    height: "56px"
-  tab-tape:
-    backgroundColor: "{colors.tape}"
-    textColor: "{colors.ink-soft}"
-    typography: "{typography.label}"
-    rounded: "{rounded.tape}"
-    padding: "8px 16px"
+    rounded: "{rounded.control}"
     height: "44px"
-  tab-tape-selected:
-    textColor: "{colors.ink}"
-  board:
-    backgroundColor: "{colors.kraft}"
-    rounded: "{rounded.board}"
-    padding: "48px 24px 32px"
-  taped-photo:
-    backgroundColor: "{colors.photo-paper}"
-    padding: "10px 10px 0"
+  tab-selected:
+    backgroundColor: "{colors.blue-wash}"
+    textColor: "{colors.blue-deep}"
+  status-alert:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+    typography: "{typography.label}"
+    height: "36px"
 ---
 
 # Design System: MangoScan
 
 ## Overview
 
-**Creative North Star: "The Palengke Price Board"**
+**Creative North Star: "The Specimen Sheet"**
 
-Every screen is a sheet of kraft corrugated card propped on a plywood table, lettered with a chisel-tip marker the way a market vendor labels a crate of mangoes. The system speaks in two voices: marker lettering for the few words that decide what happens to the fruit (the verdict, the grade and the imperative), and a sturdy condensed grotesk with tabular numerals for everything that has to be read precisely.
+MangoScan is set like a type foundry's specimen page: warm off-white paper, black ink, one cobalt accent, hairline rules and a monospace voice. The mango takes the place of the giant specimen glyph, and every reading is shown like a variable-font axis: a label, a value, and a track with a knob at the value. The user supplied the reference (a monochrome variable-typeface marketing page) and it is pinned.
 
-The page is light because the tool is used in daylight and under packhouse fluorescents. Depth comes from real materials: fibrous card, translucent masking tape with torn ends, and white photo paper. State is shown with marks a person would make with a pen (a check, a circle, a strike-through or a highlighter swipe), never with colour alone. Density is low: one event per phone viewport.
+The page is light because farmers use it outdoors on phones in daylight. Ink on paper is the highest-contrast pairing available in sun. Depth is almost absent: hairlines separate everything, and only the reading overlay casts a shadow. Density is low on the phone (one task per screen) and rises to a three-column specimen layout on wide screens.
 
 **Key Characteristics:**
-- Kraft card on plywood, never white app chrome.
-- Marker lettering only for verdicts, imperatives and the screen's single instruction.
-- Condensed grotesk with tabular numerals for every reading.
-- Masking tape holds tabs, secondary buttons and photos.
-- Drawn marks (check, circle, strike, arrow, highlighter) carry state.
+- Paper and ink, with cobalt blue as the only colour in the interface.
+- JetBrains Mono for everything read or tapped; Archivo only for the verdict word and the wordmark.
+- Hairline grids and rules instead of cards.
+- Readings drawn as axis tracks with a knob at the value.
+- One button per screen; technical detail folded into a drawer.
+- The user's photos always keep their real colour; only the decorative sample specimen is printed in greyscale.
 
 ## Colors
 
-A restrained material palette: kraft and plywood grounds, one near-black ink, two marker colours that encode the verdict, and one highlighter for emphasis.
-
 ### Primary
-- **Marker Ink** (ink): all body text, marker lettering, primary buttons and focus rings.
-- **Highlighter Yellow** (highlighter): the single emphasis swipe behind the imperative, text selection and viewfinder corner guides. Never a text colour.
-
-### Secondary
-- **Marker Red** (marker-red): disease verdicts (anthracnose, stem-end rot), the grade strike and circle, and error notes. Only for large marker text on kraft, or for text on the light note paper.
-- **Marker Green** (marker-green): the healthy verdict, the grade check and completed pipeline steps. Large text only on kraft.
+- **Ink** (ink): all text, outline buttons, knobs on secondary readings, and the inverted "Disease found" block.
+- **Cobalt** (blue): the one accent. Primary buttons, the selected tab, focus rings, text selection, the defect-coverage knob and fill, and the scan line. Never used for body text.
 
 ### Neutral
-- **Kraft Card** (kraft): the face of every board, textured by the `static/img/kraft.png` tile.
-- **Kraft Liner** (kraft-liner): the line under the fluted top edge of each board.
-- **Plywood Table** (plywood): the page ground under the boards.
-- **Soft Ink** (ink-soft): secondary text on kraft, pending tabs, and the struck-out grade.
-- **Masking Tape** (tape): tabs, secondary buttons, and the strips holding photos.
-- **Photo Paper** (photo-paper): the border around every photo and note.
+- **Paper** (paper): the page ground everywhere.
+- **Raised paper** (paper-raised): photo frames, notes and the reading overlay panel.
+- **Sunk paper** (paper-sunk): letterbox behind photos that do not fill their frame.
+- **Ink 2** (ink-2): secondary text (10.9:1 on paper).
+- **Ink 3** (ink-3): scale ends, pending pipeline steps and small metadata (6.3:1 on paper).
+- **Rule / Rule strong**: hairlines between rows and around grids and controls.
 
 ### Named Rules
-**The Verdict Colour Rule.** Red and green belong to the verdict. They never decorate, and they only ever appear as large marker text or as drawn marks.
+**The One Accent Rule.** Cobalt is the only hue in the interface. The verdict is never carried by red or green: it is carried by the words, the icon, and the inverted ink block for disease.
 
-**The One Swipe Rule.** Highlighter yellow appears once per screen: behind the imperative, or as the viewfinder guides.
+**The True Photo Rule.** The farmer's photos and the marked-up evidence keep their real colour. Greyscale is only for the decorative sample specimen on the scan screen.
 
 ## Typography
 
-**Display Font:** Permanent Marker (with Segoe Print, cursive), self-hosted.
-**Body Font:** Barlow Semi Condensed (with Arial Narrow, sans-serif), self-hosted, weights 400 to 700.
+**Mono:** JetBrains Mono (variable, 400 to 800), self-hosted.
+**Display:** Archivo (variable width 62 to 125 %, weight 100 to 900), self-hosted.
 
-**Character:** A loose chisel marker set against a disciplined, narrow grotesk. The marker says what to do; the grotesk proves it.
+**Character:** A disciplined monospace carries instructions, readings and controls, like the spec text of a type specimen. A heavy, slightly condensed grotesk carries the few words that act as the specimen: the verdict and the big numbers.
 
 ### Hierarchy
-- **Display** (400, clamp(3rem, 14vw, 5.25rem), 1.05): the scan screen's one instruction, rotated −1.5°.
-- **Verdict** (400, fitted to the card with container units, 0.95, uppercase): the class name, filling the board width on one line and rotated −2°.
-- **Imperative** (400, clamp(1.9rem, 8vw, 2.75rem)): one short command under a highlighter swipe.
-- **Lede / Action** (400–500, 1.1875rem, 1.45): the sentence that explains the screen or the treatment, at most 44ch.
-- **Body** (400, 1.0625rem, 1.5, tabular numerals).
-- **Label** (600–700, 1rem, 0.04–0.08em tracking, uppercase): tabs, buttons, the grade label and section toggles.
+- **Headline** (Mono 500, clamp(2.25rem, 10vw, 4rem), 1.1, -0.03em): the scan screen's instruction, "Scan a mango."
+- **Verdict** (Archivo 800 at 88 % width, fitted to its column with container units up to 6rem, 0.92): the class name, on one line.
+- **Imperative** (Mono 500, clamp(1.625rem, 6vw, 2.25rem)): the order under the verdict ("Quarantine.").
+- **Lede / Action** (Mono 400, 1 to 1.0625rem, 1.65, at most 46ch): the sentence that explains the screen or the treatment.
+- **Label** (Mono 700, 0.8125rem, 0.1em, uppercase): the status block only.
 
 ### Named Rules
-**The Few Marker Words Rule.** Marker lettering never runs longer than one short line, except the scan-screen instruction. Paragraphs, readings and controls are always set in Barlow.
+**The Tabular Rule.** Every number uses tabular figures and a slashed zero.
 
-**The Tabular Rule.** Every number is shown with tabular numerals.
+**The Specimen Word Rule.** Archivo appears only for the verdict and the wordmark. Everything else is Mono.
 
 ## Layout
 
-A single centred board, at most 620px wide, on the scan screen. The verdict screen is one column on phones. From 900px up it becomes two columns: the verdict board on the left (1.05fr) and the taped evidence photo on the right (1fr), with the photo sticky. The content container is at most 1120px, with safe-area-aware side gutters of 12–16px.
+Two columns from 900px up, one column below. The content container is at most 1180px with 16px safe-area gutters.
 
-On touch devices the scan board fills the viewport up to 660px tall and pushes the photo picker to the bottom. "Take photo" is the last and largest control, at thumb height. Spacing follows a 4px base: 4, 8, 12, 16, 24, 32, 48, 64. Boards pad 48/24/32px on phones and 64/48/48px from 600px up.
+- **Scan screen:** the words and controls on the left (headline, one lede sentence, the photo tip, "Take photo", then two text links: "Choose a saved photo" and "Use live camera"); a large square photo frame on the right that shows a greyscale example until the farmer picks a photo, then their photo in colour.
+- **Result screen:** the verdict, order, action and "Scan another mango" on the left, followed by the grade and the defect-coverage reading; the marked-up photo on the right, sticky.
+- **Technical detail is folded away.** Under each screen, one "More" drawer holds what only researchers need: how the pipeline works on the scan screen, and model confidence, hue, saturation, photo size, the pipeline and the Otsu note on the result screen.
+
+On touch phones the scan screen's first view ends with "Take photo" at thumb height, and after a photo is chosen the "Check this mango" button sticks to the bottom edge. Spacing follows a 4px base: 4, 8, 12, 16, 24, 32, 48, 64, 96.
 
 ## Elevation & Depth
 
-Depth is material: paper on a table. Boards cast one soft two-part shadow. Photos and notes cast a smaller one. Tape has no shadow; it is translucent and sits on top.
-
-### Shadow Vocabulary
-- **Board** (`box-shadow: 0 1px 1px rgb(70 45 15 / 0.18), 0 12px 28px -8px rgb(70 45 15 / 0.38)`): every kraft board.
-- **Paper** (`box-shadow: 0 1px 2px rgb(60 40 15 / 0.25), 0 8px 18px -6px rgb(60 40 15 / 0.35)`): taped photos and notes.
-- **Ink button** (`box-shadow: 0 8px 16px -8px rgb(30 20 8 / 0.55)`): the primary button.
-
-### Named Rules
-**The Declare Once Rule.** Each surface gets either a shadow or a hairline, never both.
+Flat. Hairlines (1px rule or rule-strong) separate rows, grid cells and columns. The only shadow is on the reading overlay panel (`0 2px 4px rgb(18 18 18 / 0.06), 0 24px 48px -16px rgb(18 18 18 / 0.28)`), because it floats over the page. Knobs use a 3–4px paper-coloured ring so they cut through the track.
 
 ## Shapes
 
-Corners are nearly square (3px on boards, 1px on tape) because cut cardboard and tape are square. Every board has a fluted top edge: an SVG corrugation profile over dark liner. Tape strips have torn, zig-zag ends drawn with an SVG mask, and sit slightly rotated (−8° to +6° on photos, ±1° on tabs). Photos sit on white paper at −0.6°.
+Corners are 2px on buttons, tabs and frames. Knobs and the grade dot are circles. Icons are drawn SVG with square caps and mitred joins at 1.75px stroke.
 
 ## Components
 
 ### Buttons
-- **Shape:** near-square (3px); 56px tall; the "Take photo" button is 72px tall.
-- **Ink (primary):** near-black fill, cream uppercase Barlow 700 label, and a stroke icon on the left.
-- **Hover / Active:** the fill goes to pure black; pressing moves the button down 2px. Disabled buttons fill with soft ink and show the progress cursor.
-- **Tape (secondary):** a torn-end masking-tape strip with an ink label. It gets lighter on hover.
-- **Text link:** ink text with a 2px underline and 4px offset (used for "Remove").
+- **Primary:** cobalt fill, white Mono 600 label on the left, stroke icon on the right; 56px tall, 72px for "Take photo", "Check this mango" and "Capture and check". The arrow icon nudges right on hover.
+- **Text link:** ink text with a 1px underline at 5px offset (used for "Remove").
 
 ### Tabs
-- **Style:** masking-tape labels, rotated −1° and +1.2°, with an uppercase Barlow 600 label.
-- **State:** the selected tab turns full ink and gains a skewed 3px marker underline, which draws in from the left. The unselected tab stays soft ink. Tabs use WAI-ARIA tablist behaviour with arrow, Home and End keys.
+Only on the result screen, to switch the evidence photo between "Marked up" and "Original": two equal outlined cells, 44px tall. The selected one gets a 1.5px cobalt border, a cobalt wash and cobalt text. The scan screen has no tabs; the live camera is a text link with a "Back to photo" link inside it.
 
-### Boards
-- **Corner Style:** 3px.
-- **Background:** kraft plus the fibre tile.
-- **Shadow Strategy:** the Board shadow.
-- **Internal Padding:** 48/24/32px on phones and 64/48/48px from 600px up.
+### Text links
+Secondary choices are underlined Mono 600 text links at 44px height, never a second button, so each screen has exactly one button.
 
-### Taped Photo
-White photo-paper frame with 10px padding and two torn tape strips at the top. The caption row holds the file name (ellipsised), the size, and actions.
+### Status block
+"No disease found" is an outlined block with a check icon. "Disease found" is the one inverted block on the page (ink fill, paper text, warning icon), so it reads at a glance in sun.
+
+### Readouts (signature)
+Each reading is a row: label left, value right in bold Mono with its unit small, then a track (1px rule) with a fill and a knob at the value, and the scale ends underneath. The visible reading is defect coverage, in cobalt, under a plain "Grade" row. Confidence, hue (0–180) and saturation (0–255) use the same rows in ink inside the "Technical details" drawer.
+
+### Specimen
+On wide scan screens, a square frame shows the sample mango in greyscale, multiplied into the paper, captioned "Example photo". When the farmer picks a photo, it replaces the sample in full colour and the caption becomes the file name.
+
+### Pipeline
+The five real stages: resize to 128 × 128, HSV histogram (32,768), GLCM (20), Hu moments (7), RBF SVM (3 classes). Always a list with hairlines between rows. In the drawers every step shows an ink check. In the checking overlay, pending steps show their number in ink 3, the current step a pulsing cobalt dot, finished steps an ink check.
+
+### "More" drawer
+A full-width `details` element between two strong hairlines, 56px summary row with a plus that turns into a cross when open.
+
+### Reading overlay
+A raised paper panel over a 94 % paper veil. The chosen photo sits in a 4:3 frame with a cobalt scan line sweeping top to bottom, above the pipeline list.
 
 ### Notes
-Light paper slips (#fbf3e2) with the Paper shadow, rotated −0.4°. Error notes use marker red, a drawn warning icon, and a 44px close button.
+Raised paper with a 1.5px ink border and a drawn warning icon. The close button is 44px.
 
-### Verdict Block (signature)
-The class name in marker fills the board. Beside the "Grade" label:
-- **Diseased:** a struck-through "A" and a circled grade letter.
-- **Healthy:** a checked "A".
+## Motion
 
-Below sits the imperative on a highlighter swipe, then the treatment sentence. Motion runs once: the word is revealed (700ms), the swipe grows (from 350ms), then the marks draw (from 450–650ms). All of it collapses under reduced motion.
+One authored moment per screen:
+- **Result:** the verdict word animates its variable weight from 200 to 800 and its width from 112 % to 88 % over 1.1s, while the readout knobs slide from zero to their values (900ms, from 300ms).
+- **Reading:** the scan line sweeps the photo and the steps tick off.
 
-### Readings
-Price-board rows: a soft-ink label, a 2px dotted leader, and a bold right-aligned value.
-
-### Pipeline List
-The five real stages, each with its count on the right:
-1. Resize, 128 × 128.
-2. HSV histogram, 32,768.
-3. GLCM, 20.
-4. Hu moments, 7.
-5. RBF SVM, 3 classes.
-
-Pending steps show a Barlow numeral. The current step shows a drawn arrow and a travelling marker underline. Finished steps show a drawn green check.
+All motion collapses under reduced motion; the scan line then rests at mid-photo.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** set the verdict, the grade marks and the imperative in Permanent Marker, and everything else in Barlow Semi Condensed.
-- **Do** show state with drawn marks (check, circle, strike, arrow, underline) as SVG, in the same stroke language.
+- **Do** keep the interface to paper, ink and cobalt.
+- **Do** carry the verdict with words, icons and the inverted block, never with hue alone.
+- **Do** show every reading as an axis track with its scale ends.
 - **Do** keep touch targets at least 44px, and make the main action 56–72px tall and last in the thumb zone.
-- **Do** hold photos and secondary controls with torn-end tape.
-- **Do** keep numbers tabular and name units in plain words ("33.9% of surface", "48 °C").
+- **Do** keep numbers tabular and name units in plain words ("11.2% of surface", "48 °C").
 
 ### Don't:
+- **Don't** add red, green or any second accent to the interface.
+- **Don't** desaturate the farmer's photo or the marked-up evidence.
+- **Don't** use cards with shadows, gradient text, or a kicker label above a heading.
 - **Don't** use Unicode glyphs or emoji as icons or state marks.
-- **Don't** put red or green on small text over kraft; they fail contrast there.
-- **Don't** use white app cards, gradient text, or zero-blur offset shadows.
 - **Don't** burn text labels into the detection overlay; the page carries the words.
-- **Don't** show the old Cursor-style stage names (Thinking, Grep, Read, Edit, Done); show only the real pipeline.
