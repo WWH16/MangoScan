@@ -35,6 +35,7 @@
     --ring: #71717a;
     --destructive: #dc2626;         /* red-600 */
     --destructive-soft: #fef2f2;
+    --destructive-border: #fca5a5;
     --success: #15803d;             /* green-700 */
     --success-soft: #f0fdf4;
 
@@ -270,6 +271,20 @@ img { max-width: 100%; display: block; }
     transition: background-color 150ms;
 }
 .nav-link:hover { background: var(--secondary); }
+.bar-actions { display: flex; align-items: center; gap: var(--space-2); }
+.lang-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius);
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 150ms, color 150ms;
+}
+.lang-link:hover { background: var(--secondary); color: var(--foreground); }
 .screen-auth .account-nav,
 .screen-scans .account-nav { display: none; }
 
@@ -436,6 +451,8 @@ img { max-width: 100%; display: block; }
 }
 .note-close:hover { background: rgb(0 0 0 / 0.05); }
 .flash { margin-bottom: var(--space-5); border-color: #bbf7d0; background: var(--success-soft); color: #166534; font-weight: 500; }
+.flash-error { border-color: var(--destructive-border); background: var(--destructive-soft); color: #b91c1c; }
+.flash-error::before { -webkit-mask-image: var(--svg-alert); mask-image: var(--svg-alert); }
 .flash::before {
     content: "";
     width: 16px;
@@ -836,7 +853,17 @@ img { max-width: 100%; display: block; }
 .empty .tip { margin: 0 auto; max-width: 36ch; }
 .scans-cta { width: 100%; }
 @media (min-width: 600px) { .scans-cta { width: auto; align-self: flex-start; } }
-.logout-form { margin-top: calc(var(--space-2) * -1); }
+.account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--space-5);
+    margin-top: calc(var(--space-2) * -1);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+}
+.account-actions form { margin: 0; }
+.link-danger { color: var(--destructive); text-decoration-color: var(--destructive-border); }
 
 /* ---------- Motion ---------- */
 

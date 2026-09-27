@@ -19,7 +19,7 @@
                {% if autofocus %}autofocus{% endif %}
                aria-describedby="{% if hint and not errors[name] %}f-{{ name }}-hint {% endif %}{% if errors[name] %}f-{{ name }}-err{% endif %}"
                {% if errors[name] %}aria-invalid="true"{% endif %}>
-        <button type="button" class="reveal" data-reveal="f-{{ name }}" aria-pressed="false">Show</button>
+        <button type="button" class="reveal" data-reveal="f-{{ name }}" aria-pressed="false" data-show="{{ _('Show') }}" data-hide="{{ _('Hide') }}">{{ _("Show") }}</button>
     </div>
     {% else %}
     <input id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value }}" required
@@ -48,7 +48,7 @@ document.querySelectorAll('[data-reveal]').forEach((btn) => {
     btn.addEventListener('click', () => {
         const show = input.type === 'password';
         input.type = show ? 'text' : 'password';
-        btn.textContent = show ? 'Hide' : 'Show';
+        btn.textContent = show ? btn.dataset.hide : btn.dataset.show;
         btn.setAttribute('aria-pressed', String(show));
         input.focus();
     });
@@ -56,7 +56,7 @@ document.querySelectorAll('[data-reveal]').forEach((btn) => {
 document.querySelectorAll('form.auth-form').forEach((form) => form.addEventListener('submit', () => {
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
-    btn.querySelector('span').textContent = 'Please wait…';
+    btn.querySelector('span').textContent = {{ _('Please wait…')|tojson }};
 }));
 </script>
 {% endmacro %}

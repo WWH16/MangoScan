@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}MangoScan &middot; My scans{% endblock %}
+{% block title %}MangoScan &middot; {{ _("My scans") }}{% endblock %}
 {% block body_class %}screen-scans{% endblock %}
 
 {% block content %}
 <section class="scans" aria-labelledby="scans-heading">
     <div class="scans-head">
-        <h1 id="scans-heading" class="headline">My scans.</h1>
+        <h1 id="scans-heading" class="headline">{{ _("My scans.") }}</h1>
         <p class="lede">{{ user.name or user.email }}{% if user.name %} &middot; {{ user.email }}{% endif %}</p>
     </div>
 
     {% if load_failed %}
     <div class="note note-error" role="alert">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
-        <p>Your scans could not be loaded. Check the connection and reload the page.</p>
+        <p>{{ _("Your scans could not be loaded. Check the connection and reload the page.") }}</p>
     </div>
     {% elif not rows %}
     <div class="empty">
-        <p class="empty-title">No saved scans yet.</p>
-        <p class="tip">Every mango you check while logged in shows up here.</p>
+        <p class="empty-title">{{ _("No saved scans yet.") }}</p>
+        <p class="tip">{{ _("Every mango you check while logged in shows up here.") }}</p>
     </div>
     {% else %}
     <ul class="scan-list">
@@ -28,10 +28,10 @@
             <a class="scan-row" href="{{ url_for('accounts.scan_detail', scan_id=r.id) }}">
                 {% if r.thumb %}<img src="{{ r.thumb }}" alt="" width="72" height="72" loading="lazy">{% else %}<span class="thumb-missing" aria-hidden="true"></span>{% endif %}
                 <span class="scan-row-text">
-                    <span class="scan-word">{{ r.word }}</span>
-                    <span class="scan-meta">{{ r.date }}{% if r.telemetry and r.telemetry.imperative %} &middot; {{ r.telemetry.imperative }}{% endif %}</span>
+                    <span class="scan-word">{{ _(r.word) }}</span>
+                    <span class="scan-meta">{{ r.date }}{% if r.telemetry and r.telemetry.imperative %} &middot; {{ _(r.telemetry.imperative) }}{% endif %}</span>
                 </span>
-                {% if 'healthy' not in lower %}<span class="scan-flag">Disease</span>{% endif %}
+                {% if 'healthy' not in lower %}<span class="scan-flag">{{ _("Disease") }}</span>{% endif %}
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
             </a>
         </li>
@@ -40,13 +40,47 @@
     {% endif %}
 
     <a href="{{ url_for('index') }}" class="btn btn-primary btn-take scans-cta">
-        <span>Scan a mango</span>
+        <span>{{ _("Scan a mango") }}</span>
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4H9L7 7H3v13h18V7h-4z"/><circle cx="12" cy="13" r="3.5"/></svg>
     </a>
 
-    <form method="POST" action="{{ url_for('accounts.logout') }}" class="logout-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="link-btn">Log out</button>
-    </form>
+    <div class="account-actions">
+        <form method="POST" action="{{ url_for('accounts.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link-btn">{{ _("Log out") }}</button>
+        </form>
+        <button type="button" class="link-btn link-danger" id="btn-account-delete" aria-haspopup="dialog">{{ _("Delete my account") }}</button>
+    </div>
 </section>
+
+<dialog class="modal" id="account-dialog" aria-labelledby="account-title" aria-describedby="account-desc">
+    <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2 class="modal-title" id="account-title">{{ _("Delete your account?") }}</h2>
+        <p class="modal-desc" id="account-desc">{{ _("Your account, all your saved scans and their photos will be deleted for good. You can't undo this.") }}</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="btn-account-cancel">{{ _("Cancel") }}</button>
+            <button type="submit" class="btn btn-destructive" id="btn-account-confirm">{{ _("Delete account") }}</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const dialog = document.getElementById('account-dialog');
+    const opener = document.getElementById('btn-account-delete');
+    const cancel = document.getElementById('btn-account-cancel');
+    const confirmBtn = document.getElementById('btn-account-confirm');
+    opener.addEventListener('click', () => { dialog.showModal(); cancel.focus(); });
+    cancel.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => opener.focus());
+    document.getElementById('account-form').addEventListener('submit', () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = {{ _('Deleting…')|tojson }};
+    });
+})();
+</script>
 {% endblock %}

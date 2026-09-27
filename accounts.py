@@ -13,6 +13,8 @@ import secrets
 from functools import wraps
 from datetime import datetime, timezone
 
+import ratelimit
+from i18n import t
 from flask import (
     Blueprint, abort, current_app, flash, g, redirect, render_template,
     request, session, url_for,
@@ -127,7 +129,15 @@ def csrf_token():
 def _check_csrf():
     sent = request.form.get("csrf_token", "")
     if not sent or not secrets.compare_digest(sent, session.get("_csrf", "")):
-        abort(400, "The form expired. Go back, reload the page and try again.")
+        abort(400, t("The form expired. Go back, reload the page and try again."))
+
+
+AUTH_LIMIT = (10, 10 * 60)  # account form submissions per client per 10 minutes
+
+
+def _too_many():
+    """True when this client has sent too many account forms; the caller shows a message."""
+    return not ratelimit.allow("auth", *AUTH_LIMIT)
 
 
 def _safe_next(default="index"):
@@ -143,19 +153,19 @@ def _safe_next(default="index"):
 def _auth_message(exc):
     text = str(getattr(exc, "message", "") or exc).lower()
     if "invalid login credentials" in text:
-        return "That email and password do not match. Check them and try again."
+        return t("That email and password do not match. Check them and try again.")
     if "email not confirmed" in text:
-        return "Confirm your email first. Open the link we sent to your inbox."
+        return t("Confirm your email first. Open the link we sent to your inbox.")
     if "already registered" in text or "already been registered" in text:
-        return "An account with this email already exists. Log in instead."
+        return t("An account with this email already exists. Log in instead.")
     if "password" in text and ("weak" in text or "at least" in text or "characters" in text):
-        return f"Choose a stronger password: at least {MIN_PASSWORD} characters."
+        return t("Choose a stronger password: at least {n} characters.", n=MIN_PASSWORD)
     if "rate limit" in text or "too many" in text or "security purposes" in text:
-        return "Too many tries. Wait a minute, then try again."
+        return t("Too many tries. Wait a minute, then try again.")
     if "expired" in text or ("invalid" in text and "token" in text):
-        return "This link has expired or was already used. Ask for a new one."
+        return t("This link has expired or was already used. Ask for a new one.")
     current_app.logger.warning("Supabase auth error: %s", exc)
-    return "Something went wrong on our side. Try again in a moment."
+    return t("Something went wrong on our side. Try again in a moment.")
 
 
 # ---------- Sign up, log in, log out ----------
@@ -169,15 +179,18 @@ def signup():
     errors = {}
     if request.method == "POST":
         _check_csrf()
+        if _too_many():
+            errors["form"] = t("Too many tries. Wait a few minutes, then try again.")
+            return render_template("signup.html", form=form, errors=errors), 429
         form["name"] = request.form.get("name", "").strip()
         form["email"] = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         if not form["name"]:
-            errors["name"] = "Enter your name."
+            errors["name"] = t("Enter your name.")
         if not EMAIL_RE.match(form["email"]):
-            errors["email"] = "Enter an email address like name@example.com."
+            errors["email"] = t("Enter an email address like name@example.com.")
         if len(password) < MIN_PASSWORD:
-            errors["password"] = f"Use at least {MIN_PASSWORD} characters."
+            errors["password"] = t("Use at least {n} characters.", n=MIN_PASSWORD)
         if not errors:
             try:
                 res = client().auth.sign_up({
@@ -193,12 +206,12 @@ def signup():
             else:
                 if res.session:
                     _store_session(res.session, res.user)
-                    flash(f"Welcome, {form['name']}. Your scans will now be saved.")
+                    flash(t("Welcome, {name}. Your scans will now be saved.", name=form["name"]))
                     return redirect(_safe_next())
                 return render_template("auth_message.html",
-                                       title="Check your email",
-                                       heading="Check your email.",
-                                       body=f"We sent a link to {form['email']}. Open it to confirm your account, then log in.")
+                                       title=t("Check your email"),
+                                       heading=t("Check your email."),
+                                       body=t("We sent a link to {email}. Open it to confirm your account, then log in.", email=form["email"]))
     return render_template("signup.html", form=form, errors=errors)
 
 
@@ -212,11 +225,14 @@ def login():
     if request.method == "POST":
         _check_csrf()
         form["email"] = request.form.get("email", "").strip().lower()
+        if _too_many():
+            errors["form"] = t("Too many tries. Wait a few minutes, then try again.")
+            return render_template("login.html", form=form, errors=errors), 429
         password = request.form.get("password", "")
         if not EMAIL_RE.match(form["email"]):
-            errors["email"] = "Enter the email you signed up with."
+            errors["email"] = t("Enter the email you signed up with.")
         if not password:
-            errors["password"] = "Enter your password."
+            errors["password"] = t("Enter your password.")
         if not errors:
             try:
                 res = client().auth.sign_in_with_password({"email": form["email"], "password": password})
@@ -238,7 +254,7 @@ def logout():
         except Exception:
             pass  # the cookie is cleared either way
     _clear_session()
-    flash("You are logged out.")
+    flash(t("You are logged out."))
     return redirect(url_for("index"))
 
 
@@ -251,8 +267,11 @@ def forgot():
     errors = {}
     if request.method == "POST":
         _check_csrf()
+        if _too_many():
+            errors["form"] = t("Too many tries. Wait a few minutes, then try again.")
+            return render_template("forgot.html", form=form, errors=errors), 429
         if not EMAIL_RE.match(form["email"]):
-            errors["email"] = "Enter the email you signed up with."
+            errors["email"] = t("Enter the email you signed up with.")
         else:
             try:
                 client().auth.reset_password_for_email(
@@ -261,9 +280,9 @@ def forgot():
                 current_app.logger.warning("Password reset request failed: %s", exc)
             # Same answer either way, so the page does not reveal which emails have accounts
             return render_template("auth_message.html",
-                                   title="Check your email",
-                                   heading="Check your email.",
-                                   body=f"If {form['email']} has an account, we sent a link to set a new password.")
+                                   title=t("Check your email"),
+                                   heading=t("Check your email."),
+                                   body=t("If {email} has an account, we sent a link to set a new password.", email=form["email"]))
     return render_template("forgot.html", form=form, errors=errors)
 
 
@@ -301,11 +320,11 @@ def confirm():
             _store_tokens(request.form.get("access_token", ""), request.form.get("refresh_token", ""), exp)
         except Exception as exc:
             current_app.logger.warning("Email link tokens rejected: %s", exc)
-            return render_template("auth_message.html", title="Link not valid", heading="This link does not work.",
-                                   body="Open the newest email from MangoScan, or ask for a new link."), 400
+            return render_template("auth_message.html", title=t("Link not valid"), heading=t("This link does not work."),
+                                   body=t("Open the newest email from MangoScan, or ask for a new link.")), 400
         if kind == "recovery":
             return redirect(url_for("accounts.reset_password"))
-        flash("Your email is confirmed. Your scans will now be saved.")
+        flash(t("Your email is confirmed. Your scans will now be saved."))
         return redirect(url_for("index"))
 
     token_hash = request.args.get("token_hash", "")
@@ -314,18 +333,18 @@ def confirm():
         # Default-template links: read the tokens from the address fragment in the browser
         return render_template("auth_fragment.html")
     if kind not in {"signup", "email", "recovery", "invite", "magiclink", "email_change"}:
-        return render_template("auth_message.html", title="Link not valid", heading="This link does not work.",
-                               body="Open the newest email from MangoScan, or ask for a new link."), 400
+        return render_template("auth_message.html", title=t("Link not valid"), heading=t("This link does not work."),
+                               body=t("Open the newest email from MangoScan, or ask for a new link.")), 400
     try:
         res = client().auth.verify_otp({"token_hash": token_hash, "type": kind})
     except Exception as exc:
-        return render_template("auth_message.html", title="Link not valid", heading="This link does not work.",
+        return render_template("auth_message.html", title=t("Link not valid"), heading=t("This link does not work."),
                                body=_auth_message(exc)), 400
     if res.session:
         _store_session(res.session, res.user)
     if kind == "recovery":
         return redirect(url_for("accounts.reset_password"))
-    flash("Your email is confirmed. Your scans will now be saved.")
+    flash(t("Your email is confirmed. Your scans will now be saved."))
     return redirect(url_for("index"))
 
 
@@ -337,7 +356,7 @@ def reset_password():
         _check_csrf()
         password = request.form.get("password", "")
         if len(password) < MIN_PASSWORD:
-            errors["password"] = f"Use at least {MIN_PASSWORD} characters."
+            errors["password"] = t("Use at least {n} characters.", n=MIN_PASSWORD)
         else:
             try:
                 sb = client()
@@ -346,7 +365,7 @@ def reset_password():
             except Exception as exc:
                 errors["form"] = _auth_message(exc)
             else:
-                flash("Your new password is saved.")
+                flash(t("Your new password is saved."))
                 return redirect(url_for("index"))
     return render_template("reset_password.html", errors=errors)
 
@@ -466,10 +485,33 @@ def scan_delete(scan_id):
             sb.storage.from_(BUCKET).remove(paths)
     except Exception:
         current_app.logger.exception("Could not delete scan")
-        flash("That scan could not be deleted. Try again.")
+        flash(t("That scan could not be deleted. Try again."), "error")
         return redirect(url_for("accounts.scan_detail", scan_id=scan_id))
-    flash("Scan deleted.")
+    flash(t("Scan deleted."))
     return redirect(url_for("accounts.scans"))
+
+
+# ---------- Delete account ----------
+
+@bp.route("/account/delete", methods=["POST"])
+@login_required
+def account_delete():
+    """Remove the user's photos, then their account; their scan rows go with it."""
+    _check_csrf()
+    sb = client(g.user["at"])
+    try:
+        rows = sb.table("scans").select("raw_path, ann_path").execute().data or []
+        paths = [p for r in rows for p in (r.get("raw_path"), r.get("ann_path")) if p]
+        for i in range(0, len(paths), 100):
+            sb.storage.from_(BUCKET).remove(paths[i:i + 100])
+        sb.rpc("delete_own_account").execute()
+    except Exception:
+        current_app.logger.exception("Account deletion failed")
+        flash(t("Your account could not be deleted. Try again, or contact the MangoScan team."), "error")
+        return redirect(url_for("accounts.scans"))
+    _clear_session()
+    flash(t("Your account and all your saved scans were deleted."))
+    return redirect(url_for("index"))
 
 
 # ---------- Friendly error pages ----------
@@ -480,6 +522,6 @@ def scan_delete(scan_id):
 def _error_page(err):
     headings = {400: "Something was not right.", 404: "Page not found.", 503: "Not available yet."}
     code = getattr(err, "code", 500)
-    body = getattr(err, "description", "") if code != 404 else "The page or scan you asked for does not exist."
-    return render_template("auth_message.html", title=headings.get(code, "Error"),
-                           heading=headings.get(code, "Something went wrong."), body=body), code
+    body = getattr(err, "description", "") if code != 404 else t("The page or scan you asked for does not exist.")
+    return render_template("auth_message.html", title=t(headings.get(code, "Something went wrong.")),
+                           heading=t(headings.get(code, "Something went wrong.")), body=t(body) if body else ""), code

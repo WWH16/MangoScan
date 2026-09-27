@@ -1,15 +1,15 @@
 import os
-import re
-import json
 import uuid
+import mimetypes
 import base64
 import socket
 import binascii
 from datetime import timedelta
-from flask import Flask, render_template, request, url_for, jsonify, redirect, send_from_directory, session, g
+from flask import Flask, render_template, request, url_for, redirect, g, send_from_directory
 from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 # Local settings (Supabase keys, secret key) live in .env; on Vercel they come from the project settings
 try:
@@ -19,6 +19,9 @@ except ImportError:
     pass
 
 import accounts
+import i18n
+import ratelimit
+from i18n import t
 
 # Vercel serverless has a read-only filesystem; writable scratch is in /tmp
 IS_VERCEL = bool(os.environ.get("VERCEL"))
@@ -28,7 +31,7 @@ if IS_VERCEL:
     # Vercel terminates HTTPS at its proxy; trust its forwarded headers so
     # external links (email confirmation redirects) are built as https://<domain>
     from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 # The session cookie carries the user's login, so the signing key must be secret and stable
 secret_key = os.environ.get("MANGOSCAN_SECRET_KEY", "").strip()
@@ -44,41 +47,43 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
 )
 app.register_blueprint(accounts.bp)
+app.register_blueprint(i18n.bp)
 
-# 10 MB maximum upload limit
+# 10 MB maximum upload limit (phones shrink photos before upload, so real uploads are far smaller)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
-if IS_VERCEL:
-    UPLOAD_FOLDER = os.path.join("/tmp", "mangoscan_uploads")
-    SCAN_FOLDER = os.path.join("/tmp", "mangoscan_scans")
-else:
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-    SCAN_FOLDER = os.path.join(BASE_DIR, "uploads")
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(SCAN_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
-TOKEN_RE = re.compile(r"^[0-9a-f]{8}$")
+SCAN_LIMIT = (20, 10 * 60)      # scans per client per 10 minutes
+DISPLAY_MAX_SIDE = 1280         # result photos are shown at most this large
+
+PHOTO_PROBLEMS = {
+    "no_fruit": "We could not find a mango in this photo. Take a closer photo of one fruit on a plain background.",
+    "blurry": "This photo is too blurry. Hold the phone still and tap the mango to focus, then try again.",
+    "dark": "This photo is too dark. Move to brighter light and try again.",
+    "bright": "This photo is too bright. Move out of direct glare and try again.",
+}
 
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def wants_json():
-    return request.is_json
-
-
 def error_response(message, status):
-    """Return the error in the format the client expects (JSON for camera captures)."""
-    if wants_json():
-        return jsonify({"error": message}), status
-    return render_template("upload.html", error=message), status
+    """Show the scan page again with the message, in the visitor's language."""
+    return render_template("upload.html", error=t(message)), status
 
 
-def scan_record_path(token):
-    return os.path.join(SCAN_FOLDER, f"{token}.json")
+def _data_url(image_bgr):
+    """Encode an image as a JPEG data URL, shrunk to the display size."""
+    import base64 as b64
+    import cv2
+
+    h, w = image_bgr.shape[:2]
+    scale = min(1.0, DISPLAY_MAX_SIDE / max(h, w))
+    if scale < 1.0:
+        image_bgr = cv2.resize(image_bgr, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    ok, buf = cv2.imencode(".jpg", image_bgr, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return "data:image/jpeg;base64," + b64.b64encode(buf.tobytes()).decode("ascii") if ok else ""
 
 
 @app.route("/")
@@ -93,24 +98,23 @@ def index():
 def predict():
     if request.method == "GET":
         return redirect(url_for("index"))
-    file_bytes = None
-    original_filename = "camera_capture.jpg"
+    if not ratelimit.allow("scan", *SCAN_LIMIT):
+        return error_response("You have scanned a lot in a short time. Wait a few minutes, then try again.", 429)
 
-    # Support JSON base64 capture from live camera
-    if request.is_json:
-        payload = request.get_json(silent=True) or {}
-        b64_data = payload.get("image_base64")
-        if not isinstance(b64_data, str) or not b64_data:
-            return error_response("No camera image received.", 400)
+    file_bytes = None
+    original_filename = "camera_scan.jpg"
+
+    # Live camera capture arrives as a base64 data URL in a form field
+    b64_data = request.form.get("image_base64", "")
+    if b64_data:
         if "," in b64_data:
             b64_data = b64_data.split(",", 1)[1]
         try:
             file_bytes = base64.b64decode(b64_data, validate=True)
-        except (binascii.Error, ValueError) as e:
-            return error_response(f"Camera capture decoding failed: {e}", 400)
-        original_filename = "camera_scan.jpg"
+        except (binascii.Error, ValueError):
+            return error_response("The camera photo could not be read. Try again.", 400)
 
-    # Support standard file upload or direct camera capture
+    # Standard file upload or direct camera capture
     elif "image" in request.files or "image_camera" in request.files:
         file = None
         for key in ("image", "image_camera"):
@@ -120,10 +124,9 @@ def predict():
                 break
 
         if not file:
-            return error_response("No file selected. Please choose or capture a mango photo.", 400)
-
+            return error_response("No photo selected. Take or choose a photo of one mango.", 400)
         if not allowed_file(file.filename):
-            return error_response("Unsupported format. Please upload a JPG, PNG, or WEBP image.", 400)
+            return error_response("That file type is not supported. Use a JPG, PNG or WEBP photo.", 400)
 
         file_bytes = file.read()
         # secure_filename can strip everything (e.g. non-ASCII names); keep the extension
@@ -131,120 +134,81 @@ def predict():
         original_filename = secure_filename(file.filename) or f"upload.{ext}"
 
     else:
-        return error_response("Please choose an image file to upload.", 400)
+        return error_response("Take or choose a photo of one mango first.", 400)
 
-    # Decode image with OpenCV
     import cv2
     import numpy as np
 
     np_arr = np.frombuffer(file_bytes, np.uint8)
     image_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR) if np_arr.size else None
     if image_bgr is None:
-        return error_response("Could not read this file as an image. Please choose a valid photo.", 400)
+        return error_response("This file could not be opened as a photo. Choose another one.", 400)
 
-    token = uuid.uuid4().hex[:8]
-    raw_filename = f"{token}_{original_filename}"
-    ann_filename = f"detection_{token}_{original_filename}"
-
-    # Run ML inference and generate computer vision detection overlay
     try:
         from models import inference
-        label, confidence = inference.predict(image_bgr)
-        # Segment again at display resolution so the boxes and percentages are
-        # measured against the fruit rather than against the whole photo
+        # Segment at display resolution first: the photo check needs the fruit
+        # outline, and the boxes and percentages are measured against it
         mask = inference.overlay_mask(image_bgr)
-        annotated_bgr, telemetry, metrics = inference.generate_detection_overlay(
-            image_bgr, label, mask=mask
-        )
+        problem = inference.check_photo(image_bgr, mask)
+        if problem:
+            return error_response(PHOTO_PROBLEMS[problem], 422)
+        label, confidence = inference.predict(image_bgr)
+        annotated_bgr, telemetry, metrics = inference.generate_detection_overlay(image_bgr, label, mask=mask)
     except FileNotFoundError as e:
-        return error_response(f"Model files not found in models/: {e}", 500)
-    except Exception as e:
+        app.logger.error("Model files missing: %s", e)
+        return error_response("MangoScan is not set up correctly: the model files are missing.", 500)
+    except Exception:
         app.logger.exception("Diagnosis failed")
-        return error_response(f"Diagnosis error: {e}", 500)
-
-    # Save original, annotated image, and the scan result
-    with open(os.path.join(UPLOAD_FOLDER, raw_filename), "wb") as f:
-        f.write(file_bytes)
-    ext = os.path.splitext(ann_filename)[1] or ".jpg"
-    ok, encoded = cv2.imencode(ext, annotated_bgr)
-    if not ok:
-        return error_response("Could not save the detection overlay.", 500)
-    with open(os.path.join(UPLOAD_FOLDER, ann_filename), "wb") as f:
-        f.write(encoded.tobytes())
+        return error_response("Something went wrong while checking this photo. Try again.", 500)
 
     record = {
         "filename": original_filename,
-        "raw_filename": raw_filename,
-        "ann_filename": ann_filename,
+        "raw_filename": original_filename,
+        "ann_filename": os.path.splitext(original_filename)[0] + ".jpg",
         "label": str(label),
         "confidence": confidence,
         "telemetry": telemetry,
         "metrics": metrics,
     }
-    try:
-        with open(scan_record_path(token), "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False)
-    except OSError:
-        pass
-
-    # Keep only the latest scan in the cookie; the login tokens share its 4 KB limit
-    for key in [k for k in session if k.startswith("scan_")]:
-        session.pop(key)
-    session[f"scan_{token}"] = record
 
     # Signed-in users get the scan saved to their account and land on the saved copy
-    redirect_url = url_for("result_view", token=token)
     if g.get("user"):
+        ok, encoded = cv2.imencode(".jpg", annotated_bgr, [cv2.IMWRITE_JPEG_QUALITY, 90])
         mime = {".png": "image/png", ".webp": "image/webp"}
-        raw_type = mime.get(os.path.splitext(raw_filename)[1].lower(), "image/jpeg")
-        ann_type = mime.get(ext.lower(), "image/jpeg")
-        saved_id = accounts.save_scan(g.user, token, record, file_bytes, raw_type, encoded.tobytes(), ann_type)
+        raw_type = mime.get(os.path.splitext(original_filename)[1].lower(), "image/jpeg")
+        saved_id = accounts.save_scan(g.user, uuid.uuid4().hex[:8], record,
+                                      file_bytes, raw_type, encoded.tobytes(), "image/jpeg") if ok else None
         if saved_id:
-            redirect_url = url_for("accounts.scan_detail", scan_id=saved_id)
-    if request.is_json:
-        return jsonify({"success": True, "redirect_url": redirect_url})
-    return redirect(redirect_url)
+            return redirect(url_for("accounts.scan_detail", scan_id=saved_id))
 
-
-@app.route("/scan_uploads/<path:filename>")
-def serve_upload(filename):
-    """Serve uploaded and annotated scan images from the active upload folder."""
-    return send_from_directory(UPLOAD_FOLDER, filename)
-
-
-@app.route("/result/<token>")
-def result_view(token):
-    expired = "Scan session expired. Please start a new scan."
-    if not TOKEN_RE.match(token):
-        return render_template("upload.html", error=expired), 404
-
-    record = None
-    try:
-        with open(scan_record_path(token), encoding="utf-8") as f:
-            record = json.load(f)
-    except (OSError, ValueError):
-        pass
-
-    if not record:
-        record = session.get(f"scan_{token}")
-
-    if not record:
-        return render_template("upload.html", error=expired), 404
-
-    raw_file = record.get("raw_filename", "")
-    if not raw_file or not os.path.exists(os.path.join(UPLOAD_FOLDER, raw_file)):
-        return render_template("upload.html", error=expired), 404
-
+    # Everyone else sees the result straight away. Nothing is written to disk,
+    # so the page works on Vercel, where the next request may land on a
+    # different server with an empty /tmp.
     return render_template(
         "result.html",
-        image_url=url_for("serve_upload", filename=record["raw_filename"]),
-        annotated_url=url_for("serve_upload", filename=record["ann_filename"]),
-        filename=record["filename"],
+        image_url=_data_url(image_bgr),
+        annotated_url=_data_url(annotated_bgr),
+        filename=original_filename,
         prediction=record["label"],
-        confidence=record.get("confidence"),
-        telemetry=record["telemetry"],
-        metrics=record["metrics"],
+        confidence=confidence,
+        telemetry=telemetry,
+        metrics=metrics,
     )
+
+
+# ---------- Install to home screen (PWA) ----------
+
+@app.route("/sw.js")
+def service_worker():
+    # Served from the site root so it may control every page
+    resp = send_from_directory(os.path.join(BASE_DIR, "static"), "sw.js", mimetype="application/javascript")
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
+@app.route("/offline")
+def offline():
+    return render_template("offline.html")
 
 
 @app.errorhandler(405)
@@ -254,7 +218,7 @@ def method_not_allowed(error):
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
-    return error_response("File is too large (exceeds 10 MB limit). Please choose a smaller photo.", 413)
+    return error_response("That photo is too large (over 10 MB). Choose a smaller one or take a new photo.", 413)
 
 
 def lan_ip():

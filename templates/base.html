@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -7,45 +7,57 @@
     <title>{% block title %}MangoScan{% endblock %}</title>
     <link rel="preload" href="{{ url_for('static', filename='fonts/geist-var.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MangoScan">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Cpath d='M7 23c0-8 5-14 12-14 3.5 0 5 2.2 5 4.6C24 20 17 25 11.5 25 8.6 25 7 24.3 7 23z' fill='%23fafafa'/%3E%3C/svg%3E">
 </head>
 <body class="{% block body_class %}{% endblock %}">
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">{{ _("Skip to content") }}</a>
 
     <header class="site-bar">
         <div class="brand">
-            <a href="{{ url_for('index') }}" class="wordmark" aria-label="MangoScan, start a new scan">
+            <a href="{{ url_for('index') }}" class="wordmark" aria-label="{{ _('MangoScan, start a new scan') }}">
                 <svg class="wordmark-fruit" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23c0-8 5-14 12-14 3.5 0 5 2.2 5 4.6C24 20 17 25 11.5 25 8.6 25 7 24.3 7 23z"/><path d="M19 9c1-3 3.5-4.5 6.5-4.5-.6 3-2.8 4.8-6.5 4.5z"/></svg>
                 <span>MangoScan</span>
             </a>
-            <p class="brand-note">Mango disease checker</p>
+            <p class="brand-note">{{ _("Mango disease checker") }}</p>
         </div>
+        <div class="bar-actions">
+        <a class="lang-link" href="{{ url_for('i18n.set_lang', code='en' if lang == 'fil' else 'fil', next=request.full_path.rstrip('?')) }}"
+           hreflang="{{ 'en' if lang == 'fil' else 'fil' }}" lang="{{ 'en' if lang == 'fil' else 'fil' }}"
+           aria-label="{{ _('Language') }}: {{ 'English' if lang == 'fil' else 'Filipino' }}">{{ 'English' if lang == 'fil' else 'Filipino' }}</a>
         {% if accounts_enabled %}
         <nav class="account-nav" aria-label="Account">
             {% if user %}
-            <a href="{{ url_for('accounts.scans') }}" class="nav-link">My scans</a>
+            <a href="{{ url_for('accounts.scans') }}" class="nav-link">{{ _("My scans") }}</a>
             {% else %}
-            <a href="{{ url_for('accounts.login') }}" class="nav-link">Log in</a>
+            <a href="{{ url_for('accounts.login') }}" class="nav-link">{{ _("Log in") }}</a>
             {% endif %}
         </nav>
         {% endif %}
+        </div>
     </header>
 
     <main id="main" class="page">
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="flash" role="status">
-            {% for message in messages %}<p>{{ message }}</p>{% endfor %}
-        </div>
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="flash{% if category == 'error' %} flash-error{% endif %}" role="{{ 'alert' if category == 'error' else 'status' }}"><p>{{ message }}</p></div>
+        {% endfor %}
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
     <footer class="site-foot">
-        <p>MangoScan &middot; thesis prototype &middot; HSV, GLCM and Hu features with an RBF SVM</p>
+        <p>{{ _("MangoScan · thesis prototype · HSV, GLCM and Hu features with an RBF SVM") }}</p>
     </footer>
 
     {% block scripts %}{% endblock %}
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+    }
+    </script>
 </body>
 </html>

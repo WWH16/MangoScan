@@ -62,3 +62,26 @@ drop policy if exists "Users delete own scan photos" on storage.objects;
 create policy "Users delete own scan photos" on storage.objects
     for delete to authenticated
     using (bucket_id = 'scans' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- 3. Let a signed-in user delete their own account ---------------------------
+-- Deleting the auth user also deletes their scans rows (on delete cascade).
+-- The app removes their photos from Storage first.
+-- SECURITY DEFINER is needed because users cannot touch auth.users directly;
+-- the function only ever deletes the caller, and only signed-in users may run it.
+
+create or replace function public.delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if (select auth.uid()) is null then
+        raise exception 'not signed in';
+    end if;
+    delete from auth.users where id = (select auth.uid());
+end;
+$$;
+
+revoke all on function public.delete_own_account() from public, anon;
+grant execute on function public.delete_own_account() to authenticated;

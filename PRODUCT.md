@@ -6,34 +6,48 @@ product
 
 ## Users
 
-Agricultural inspectors, postharvest sorting facility technicians, mango farmers, and academic researchers evaluating mango fruit health and postharvest defects in field and packinghouse environments.
+Mango farmers are the primary users. They use MangoScan on a phone, usually a budget Android phone, outdoors in daylight in the orchard or at the packing area, often with one hand while holding the fruit. Many are more comfortable reading Filipino than English, and mobile data can be slow.
+
+Secondary users are agricultural inspectors and packinghouse sorters, who use the same flow. The thesis panel and researchers read the technical detail on a laptop; that detail is kept behind "Technical details" so it never gets in the farmer's way.
 
 ## Product Purpose
 
-A field-ready computer vision diagnostics tool that ingests mango specimen photos (via live device camera or file upload) and runs a 32,795-dimensional handcrafted feature extraction pipeline (3D HSV color histogram, GLCM texture features, Otsu morphological Hu moments) coupled with an RBF Support Vector Machine (SVM) to detect Anthracnose, Stem Rot, or verify Healthy specimens, complete with defect area calculation and agronomic prescriptions.
+MangoScan checks one mango from one photo (phone camera, live viewfinder, or a saved file) and says in plain words whether the fruit is healthy, has anthracnose, or has stem-end rot, and what to do with it. Under the hood it extracts 32,795 handcrafted features (3D HSV colour histogram, GLCM texture, Hu shape moments) and classifies them with an RBF Support Vector Machine, then marks the affected area on the photo and estimates defect coverage.
+
+Before classifying, it screens out photos it cannot judge (no single fruit in frame, too blurry, too dark or too bright) and asks for a better photo instead of guessing.
+
+Anyone can scan without an account. People who sign up (email and password, through Supabase Auth) get every scan saved with its photos under "My scans", can delete single scans, and can delete their whole account. The app can be installed to the phone's home screen.
 
 ## Brand Personality
 
-- **Editorial Calm**: Quietly confident scientific dialect without tech-bombastic clutter.
-- **Instrument Precision**: Sharp telemetry, exact feature dimensions, and reliable diagnostics.
-- **Field-Ready Clarity**: High visual contrast, direct feedback, and immediate actionable recommendations.
+- **Plain and trustworthy:** simple words, one clear answer, no hype.
+- **Calm tool, not a toy:** a clean shadcn/ui-style interface with nothing decorative.
+- **Field-ready:** readable in direct sun, big touch targets, fast on slow data.
 
 ## Anti-references
 
-- Flashy AI wrappers with unnecessary neon gradients and purple drop shadows.
-- Bloated multi-tier enterprise dashboards with decorative filler charts.
-- Unlabeled confidence percentages without physical defect localization.
+- Flashy AI apps with neon gradients and glowing effects.
+- Dashboards full of charts a farmer does not need.
+- Confidence numbers or technical terms shown to farmers without a plain-language answer.
 
 ## Design Principles
 
-1. **Instrument-Grade Feedback**: Telemetry, optical metrics, and pathology findings should look and feel like calibrated diagnostic equipment.
-2. **Field-First Usability**: High-contrast typography, large touch targets (≥44px), and seamless mobile camera capture designed for one-handed operation.
-3. **Transparent Pipeline**: Show the real pipeline stages (resize to 128x128, HSV colour histogram, GLCM texture, Hu shape moments, RBF SVM) to establish scientific credibility.
-4. **Actionable Agronomy**: Every diagnosis must pair with clear, practical sorting or treatment guidance.
+1. **One answer first:** the verdict, what to do, and the grade come before any technical reading.
+2. **Field-first usability:** high contrast, touch targets of at least 44px (56px for the main action), main action at thumb height, photos shrunk on the phone before upload.
+3. **Honest limits:** never classify a photo the model cannot judge; say why and how to retake it.
+4. **Actionable advice:** every verdict comes with practical sorting or treatment guidance.
+5. **Transparent when asked:** the real pipeline stages and measurements are available under "Technical details" for the thesis panel.
 
 ## Accessibility & Inclusion
 
-- WCAG AA compliant contrast ratios against the kraft card surface.
-- Minimum 44px touch targets on mobile viewports.
-- Keyboard-navigable WAI-ARIA tab controls with arrow-key switching.
-- Full reduced-motion safety for scanning laser sweeps and animations.
+- English and Filipino, switchable on every page.
+- WCAG AA contrast on white; muted text and borders one step darker than shadcn's defaults for sunlight.
+- Minimum 44px touch targets on phones.
+- Keyboard-navigable tabs and dialogs; focus returns to the trigger when a dialog closes.
+- Reduced-motion safe: the scan line, spinners and dialog animations collapse.
+
+## Privacy
+
+- Scanning without an account stores nothing on the server; the result exists only in the page.
+- Saved scans and photos are private to their owner (Row Level Security and a private Storage bucket).
+- Users can delete any scan, or their whole account with all scans and photos, in line with the Philippine Data Privacy Act (RA 10173).

@@ -156,12 +156,15 @@ Geist for everything, self-hosted (variable, 100–900). Geist Mono only for the
 
 ## Layout
 
-One column on phones, two columns from 900px (content max 1120px, 16px gutters). A sticky 60px header with a bottom border holds the logo tile, the wordmark, a short tagline on desktop, and an outline "Log in" or "My scans" button.
+One column on phones, two columns from 900px (content max 1120px, 16px gutters). A sticky 60px header with a bottom border holds the logo tile, the wordmark, a short tagline on desktop, a quiet language link ("Filipino" or "English", naming the other language) and an outline "Log in" or "My scans" button.
 
 - **Scan:** title, one sentence, then a card with the photo tip, "Take photo" and two links ("Choose a saved photo", "Use live camera"). On desktop an example photo sits on the right in a rounded bordered frame; it is replaced by the farmer's photo once chosen. Under everything, an accordion "How MangoScan checks a photo".
 - **Result:** badge, verdict, order, action, "Scan another mango", then the photo (tabs: Marked up / Original) and a readings card with the grade and a defect-coverage progress bar. "Technical details" is an accordion holding confidence, hue, saturation, photo size and the pipeline.
 - **Account pages:** one centred card, at most 420px wide.
-- **My scans:** a bordered list with thumbnail, verdict, date and order per row, and a red "Disease" pill when the fruit is not healthy.
+- **My scans:** a bordered list with thumbnail, verdict, date and order per row, and a red "Disease" pill when the fruit is not healthy. Under the "Scan a mango" button, a hairline row holds "Log out" and a red "Delete my account" link, which opens the same alert dialog as deleting a scan.
+- **Photo problems:** when a photo has no clear fruit, or is too blurry, too dark or too bright, the scan page returns with a red alert saying what to fix. No result is shown.
+- **Languages:** every string exists in English and Filipino; the header link switches and remembers the choice for a year.
+- **Installable:** a web app manifest and icons (dark tile with the white mango, maskable variant) let farmers add MangoScan to the home screen; offline, pages fall back to a "No internet connection" card with "Try again".
 
 ## Components
 

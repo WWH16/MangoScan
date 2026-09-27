@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% from "_pipeline.html" import pipeline %}
 
-{% block title %}MangoScan &middot; Scan a mango{% endblock %}
+{% block title %}MangoScan &middot; {{ _("Scan a mango") }}{% endblock %}
 {% block body_class %}screen-scan{% endblock %}
 
 {% block content %}
 <div class="hero hero-scan" id="scan-hero">
     <section class="scan-main" aria-labelledby="scan-heading">
-        <h1 id="scan-heading" class="headline">Scan a mango.</h1>
-        <p class="lede">Take one photo. MangoScan tells you if the fruit is <strong>healthy</strong>, has <strong>anthracnose</strong> or has <strong>stem-end rot</strong>, and what to do next.</p>
+        <h1 id="scan-heading" class="headline">{{ _("Scan a mango.") }}</h1>
+        <p class="lede">{{ _html("Take one photo. MangoScan tells you if the fruit is <strong>healthy</strong>, has <strong>anthracnose</strong> or has <strong>stem-end rot</strong>, and what to do next.") }}</p>
 
         {% if error %}
         <div class="note note-error" role="alert">
@@ -20,39 +20,40 @@
         <div id="client-error" class="note note-error" role="alert" tabindex="-1" hidden>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
             <p id="client-error-text"></p>
-            <button type="button" id="client-error-close" class="note-close" aria-label="Dismiss message">
+            <button type="button" id="client-error-close" class="note-close" aria-label="{{ _('Dismiss message') }}">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
         </div>
 
         <!-- Photo: native camera capture or file -->
         <div id="upload-panel" class="panel">
-            <p class="tip">Fill the frame with the fruit. Plain background, even light, stem end showing.</p>
+            <p class="tip">{{ _("Fill the frame with the fruit. Plain background, even light, stem end showing.") }}</p>
             <form id="upload-form" action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="image" id="image-input" class="visually-hidden" accept="image/png, image/jpeg, image/webp" tabindex="-1">
                 <input type="file" name="image_camera" id="camera-direct-input" class="visually-hidden" accept="image/*" capture="environment" tabindex="-1">
+                <input type="hidden" name="image_base64" id="image-base64">
 
                 <div class="dropzone" id="dropzone">
                     <button type="button" class="btn btn-primary btn-block btn-take" id="btn-take-photo">
-                        <span>Take photo</span>
+                        <span>{{ _("Take photo") }}</span>
                         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4H9L7 7H3v13h18V7h-4z"/><circle cx="12" cy="13" r="3.5"/></svg>
                     </button>
                     <div class="minor-actions">
-                        <button type="button" class="link-btn" id="btn-choose-file">Choose a saved photo</button>
-                        <button type="button" class="link-btn" id="btn-live">Use live camera</button>
+                        <button type="button" class="link-btn" id="btn-choose-file">{{ _("Choose a saved photo") }}</button>
+                        <button type="button" class="link-btn" id="btn-live">{{ _("Use live camera") }}</button>
                     </div>
                 </div>
 
                 <figure class="preview" id="preview-container" hidden>
-                    <img id="preview-img" alt="Selected mango photo">
+                    <img id="preview-img" alt="{{ _('Selected mango photo') }}">
                     <figcaption>
                         <span id="preview-filename" class="file-name"></span>
-                        <button type="button" id="btn-remove-file" class="link-btn">Change photo</button>
+                        <button type="button" id="btn-remove-file" class="link-btn">{{ _("Change photo") }}</button>
                     </figcaption>
                 </figure>
 
                 <button type="submit" id="submit-btn" class="btn btn-primary btn-block btn-take" hidden>
-                    <span id="submit-btn-text">Check this mango</span>
+                    <span id="submit-btn-text">{{ _("Check this mango") }}</span>
                     <svg class="icon icon-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
                 </button>
             </form>
@@ -61,42 +62,42 @@
         <!-- Live viewfinder (needs HTTPS or localhost) -->
         <div id="camera-panel" class="panel" hidden>
             <div class="viewfinder" id="viewfinder">
-                <video id="camera-video" autoplay playsinline muted aria-label="Live camera view"></video>
+                <video id="camera-video" autoplay playsinline muted aria-label="{{ _('Live camera view') }}"></video>
                 <canvas id="camera-canvas" hidden></canvas>
                 <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
                 <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
-                <p class="viewfinder-hint" aria-hidden="true">Mango inside the corners</p>
+                <p class="viewfinder-hint" aria-hidden="true">{{ _("Mango inside the corners") }}</p>
             </div>
             <button type="button" id="capture-btn" class="btn btn-primary btn-block btn-take">
-                <span id="capture-btn-text">Capture and check</span>
+                <span id="capture-btn-text">{{ _("Capture and check") }}</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" class="fill"/></svg>
             </button>
 
             <div id="camera-fallback" class="note note-plain" hidden>
-                <p id="camera-fallback-desc">The live camera needs a secure (HTTPS) link. The normal camera still works:</p>
+                <p id="camera-fallback-desc">{{ _("The live camera needs a secure (HTTPS) link. The normal camera still works:") }}</p>
                 <button type="button" id="btn-fallback-camera" class="btn btn-primary btn-block">
-                    <span>Take photo instead</span>
+                    <span>{{ _("Take photo instead") }}</span>
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4H9L7 7H3v13h18V7h-4z"/><circle cx="12" cy="13" r="3.5"/></svg>
                 </button>
             </div>
             <div class="minor-actions">
-                <button type="button" class="link-btn" id="btn-back-photo">Back to photo</button>
+                <button type="button" class="link-btn" id="btn-back-photo">{{ _("Back to photo") }}</button>
             </div>
         </div>
 
-        <p class="drop-hint"><span class="drop-only">You can also drop a photo on this page. </span>JPG, PNG or WEBP, up to 10&nbsp;MB.</p>
+        <p class="drop-hint"><span class="drop-only">{{ _("You can also drop a photo on this page.") }} </span>{{ _("JPG, PNG or WEBP, up to 10 MB.") }}</p>
     </section>
 
     <figure class="specimen" aria-hidden="true">
         <img id="specimen-img" class="specimen-img" src="{{ url_for('static', filename='samples/sample_healthy.jpg') }}" alt="" width="800" height="800">
-        <figcaption id="specimen-cap">Example photo</figcaption>
+        <figcaption id="specimen-cap">{{ _("Example photo") }}</figcaption>
     </figure>
 </div>
 
 <details class="more">
-    <summary>How MangoScan checks a photo</summary>
+    <summary>{{ _("How MangoScan checks a photo") }}</summary>
     <div class="more-body">
-        <p class="more-note">It measures 32,795 colour, texture and shape values from the peel, then a trained model picks one of three answers.</p>
+        <p class="more-note">{{ _("It measures 32,795 colour, texture and shape values from the peel, then a trained model picks one of three answers.") }}</p>
         {{ pipeline(done=True) }}
     </div>
 </details>
@@ -104,7 +105,7 @@
 <!-- Reading state: shown while the server works -->
 <div class="reading" id="reading" hidden>
     <div class="reading-panel" role="status" aria-live="polite">
-        <p class="reading-title">Checking the peel<span class="dots" aria-hidden="true"></span></p>
+        <p class="reading-title">{{ _("Checking the peel") }}<span class="dots" aria-hidden="true"></span></p>
         <div class="reading-photo" id="reading-photo" aria-hidden="true"></div>
         {{ pipeline(list_id="reading-steps") }}
     </div>
@@ -113,12 +114,26 @@
 
 {% block scripts %}
 <script>
+const T = {{ {
+    "cameraStarting": _("The camera is still starting. Try again in a second."),
+    "checking": _("Checking…"),
+    "needsHttps": _("The live camera needs a secure (HTTPS) link. The normal camera still works:"),
+    "cameraUnavailable": _("Camera not available ({reason}). The normal camera still works:"),
+    "permissionDenied": _("permission denied"),
+    "notImage": _("That file is not a JPG, PNG or WEBP photo. Pick another one."),
+    "tooLarge": _("That photo is too large. Pick a smaller one or take a new photo."),
+    "preparing": _("Preparing photo…"),
+    "checkThis": _("Check this mango"),
+    "chooseFirst": _("Take or choose a photo first."),
+    "example": _("Example photo"),
+    "captureCheck": _("Capture and check")
+} | tojson }};
 (() => {
     const $ = (id) => document.getElementById(id);
     const uploadPanel = $('upload-panel'), cameraPanel = $('camera-panel');
     const fileInput = $('image-input'), cameraInput = $('camera-direct-input');
     const dropzone = $('dropzone'), preview = $('preview-container'), previewImg = $('preview-img');
-    const submitBtn = $('submit-btn'), form = $('upload-form');
+    const submitBtn = $('submit-btn'), submitText = $('submit-btn-text'), form = $('upload-form');
     const video = $('camera-video'), canvas = $('camera-canvas');
     const viewfinder = $('viewfinder'), captureBtn = $('capture-btn'), captureText = $('capture-btn-text');
     const fallback = $('camera-fallback'), fallbackDesc = $('camera-fallback-desc');
@@ -140,7 +155,7 @@
     function showSpecimen(url, name) {
         specimenImg.src = url || sampleSrc;
         specimenImg.classList.toggle('is-user', Boolean(url));
-        specimenCap.textContent = url ? name : 'Example photo';
+        specimenCap.textContent = url ? name : T.example;
     }
 
     // Checking state: walk the real pipeline stages, hold on the last one until the server answers
@@ -163,7 +178,14 @@
         reading.hidden = true;
     }
     // Back/forward cache restores the page with the overlay still up
-    window.addEventListener('pageshow', (e) => { if (e.persisted) { stopReading(); submitBtn.disabled = false; } });
+    window.addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        stopReading();
+        submitBtn.disabled = false;
+        captureBtn.disabled = false;
+        captureText.textContent = T.captureCheck;
+        $('image-base64').value = '';
+    });
 
     // Photo or live camera
     function showCamera(camera) {
@@ -185,7 +207,7 @@
     }
     async function startCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showFallback('The live camera needs a secure (HTTPS) link. The normal camera still works:');
+            showFallback(T.needsHttps);
             return;
         }
         fallback.hidden = true;
@@ -197,7 +219,7 @@
             });
             video.srcObject = stream;
         } catch (err) {
-            showFallback(`Camera not available (${err.name === 'NotAllowedError' ? 'permission denied' : err.message}). The normal camera still works:`);
+            showFallback(T.cameraUnavailable.replace('{reason}', err.name === 'NotAllowedError' ? T.permissionDenied : err.message));
         }
     }
     function stopCamera() {
@@ -205,43 +227,25 @@
     }
     window.addEventListener('pagehide', stopCamera);
 
-    function resetCapture() {
-        captureBtn.disabled = false;
-        captureText.textContent = 'Capture and check';
-    }
-    captureBtn.addEventListener('click', async () => {
-        if (!video.videoWidth) { showError('The camera is still starting. Try again in a second.'); return; }
+    captureBtn.addEventListener('click', () => {
+        if (!video.videoWidth) { showError(T.cameraStarting); return; }
         captureBtn.disabled = true;
-        captureText.textContent = 'Checking…';
+        captureText.textContent = T.checking;
 
-        // Downscale to a 1024px bounding box
-        const MAX = 1024;
+        // Downscale to a 1280px bounding box, then send it as a normal form post
+        // so the result page comes straight back from the server
+        const MAX = 1280;
         const scale = Math.min(1, MAX / Math.max(video.videoWidth, video.videoHeight));
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);
         canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
         startReading(dataUrl);
-
-        try {
-            const res = await fetch(form.action, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image_base64: dataUrl })
-            });
-            const data = await res.json().catch(() => ({ error: `Server answered ${res.status}.` }));
-            if (data.redirect_url) {
-                stopCamera();
-                window.location.href = data.redirect_url;
-                return;
-            }
-            stopReading();
-            showError(data.error || 'The scan failed. Try again.');
-        } catch (e) {
-            stopReading();
-            showError('Could not reach MangoScan. Check the connection and try again.');
-        }
-        resetCapture();
+        stopCamera();
+        fileInput.value = '';
+        cameraInput.value = '';
+        $('image-base64').value = dataUrl;
+        form.submit();
     });
 
     // Photo: native capture and file picker
@@ -261,20 +265,42 @@
         dropzone.hidden = false;
     }
 
-    function handleFile(file, source) {
+    // Phones take 3–8 MB photos; the model only needs a fraction of that, and
+    // rural mobile data is slow. Shrink to 1600 px before upload.
+    const UPLOAD_MAX_SIDE = 1600;
+    async function shrink(file) {
+        if (!('createImageBitmap' in window) || typeof DataTransfer === 'undefined') return file;
+        try {
+            const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+            const scale = Math.min(1, UPLOAD_MAX_SIDE / Math.max(bmp.width, bmp.height));
+            if (scale === 1 && file.size < 1.5 * 1024 * 1024) { bmp.close(); return file; }
+            const c = document.createElement('canvas');
+            c.width = Math.round(bmp.width * scale);
+            c.height = Math.round(bmp.height * scale);
+            c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+            bmp.close();
+            const blob = await new Promise((resolve) => c.toBlob(resolve, 'image/jpeg', 0.9));
+            if (!blob || blob.size >= file.size) return file;
+            return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+        } catch (e) {
+            return file;  // the server still accepts the original
+        }
+    }
+
+    async function handleFile(file, source) {
         if (!file) return;
         hideError();
+        $('image-base64').value = '';
         if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-            showError('That file is not a JPG, PNG or WEBP photo. Pick another one.');
+            showError(T.notImage);
             source.value = '';
             return;
         }
-        if (file.size > 10 * 1024 * 1024) {
-            showError('That photo is over 10 MB. Pick a smaller one or take a new photo.');
+        if (file.size > 25 * 1024 * 1024) {
+            showError(T.tooLarge);
             source.value = '';
             return;
         }
-        (source === fileInput ? cameraInput : fileInput).value = '';
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = URL.createObjectURL(file);
         previewImg.src = previewUrl;
@@ -283,6 +309,23 @@
         dropzone.hidden = true;
         preview.hidden = false;
         submitBtn.hidden = false;
+        submitBtn.disabled = true;
+        submitText.textContent = T.preparing;
+
+        const small = await shrink(file);
+        if (small.size > 10 * 1024 * 1024) {
+            clearFile();
+            showError(T.tooLarge);
+            return;
+        }
+        // Send the photo through the file field only
+        if (small !== file || source !== fileInput) {
+            const dt = new DataTransfer();
+            dt.items.add(small);
+            fileInput.files = dt.files;
+            cameraInput.value = '';
+        }
+        submitText.textContent = T.checkThis;
         submitBtn.disabled = false;
         submitBtn.focus();
     }
@@ -294,7 +337,7 @@
     form.addEventListener('submit', (e) => {
         if (!fileInput.files.length && !cameraInput.files.length) {
             e.preventDefault();
-            showError('Take or choose a photo first.');
+            showError(T.chooseFirst);
             return;
         }
         submitBtn.disabled = true;

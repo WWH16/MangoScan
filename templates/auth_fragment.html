@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}MangoScan &middot; Confirming{% endblock %}
+{% block title %}MangoScan &middot; {{ _("Confirming") }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}
 
 {% block content %}
 <section class="auth" aria-labelledby="auth-heading">
-    <h1 id="auth-heading" class="headline" tabindex="-1">Confirming<span class="dots" aria-hidden="true"></span></h1>
-    <p class="lede" id="fragment-msg" role="status">One moment.</p>
+    <h1 id="auth-heading" class="headline" tabindex="-1">{{ _("Confirming") }}<span class="dots" aria-hidden="true"></span></h1>
+    <p class="lede" id="fragment-msg" role="status">{{ _("One moment.") }}</p>
     <form id="fragment-form" method="POST" action="{{ url_for('accounts.confirm') }}" hidden>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="access_token">
@@ -15,8 +15,8 @@
         <input type="hidden" name="type">
     </form>
     <div class="minor-actions" id="fragment-links" hidden>
-        <a class="link-btn" href="{{ url_for('accounts.login') }}">Log in</a>
-        <a class="link-btn" href="{{ url_for('accounts.forgot') }}">Get a new link</a>
+        <a class="link-btn" href="{{ url_for('accounts.login') }}">{{ _("Log in") }}</a>
+        <a class="link-btn" href="{{ url_for('accounts.forgot') }}">{{ _("Get a new link") }}</a>
     </div>
 </section>
 {% endblock %}
@@ -34,9 +34,9 @@
         return;
     }
     const heading = document.getElementById('auth-heading');
-    heading.textContent = 'This link does not work.';
+    heading.textContent = {{ _('This link does not work.')|tojson }};
     document.getElementById('fragment-msg').textContent =
-        params.get('error_description') || 'It may have expired or been used already. Log in, or ask for a new link.';
+        params.get('error_description') || {{ _('It may have expired or been used already. Log in, or ask for a new link.')|tojson }};
     document.getElementById('fragment-links').hidden = false;
     heading.focus();
 })();

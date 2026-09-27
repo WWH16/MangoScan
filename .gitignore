@@ -33,3 +33,7 @@ static/uploads/*
 *.jpeg
 *.webp
 *.gif
+
+# App icons are tiny and needed to install the app
+!static/icons/*.png
+!public/static/icons/*.png

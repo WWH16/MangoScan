@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}MangoScan &middot; {{ _("No connection") }}{% endblock %}
+{% block body_class %}screen-auth{% endblock %}
+
+{% block content %}
+<section class="auth" aria-labelledby="auth-heading">
+    <h1 id="auth-heading" class="headline">{{ _("No internet connection.") }}</h1>
+    <p class="lede">{{ _("MangoScan needs the internet to check a photo. Move to a place with signal, then try again.") }}</p>
+    <button type="button" class="btn btn-primary btn-block" onclick="location.reload()">{{ _("Try again") }}</button>
+</section>
+{% endblock %}

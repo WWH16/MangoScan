@@ -133,6 +133,51 @@ def overlay_mask(image_bgr, max_side=512):
     return mask
 
 
+# ============================================================
+# PHOTO CHECK
+# ============================================================
+
+# Thresholds measured on 300 random photos from the training datasets:
+# no dataset photo came near any of them, so they only stop photos the
+# classifier should never see.
+MIN_SHARPNESS = 12.0     # variance of the Laplacian at 512 px; dataset 1st percentile ~30
+MIN_BRIGHTNESS = 45.0    # mean HSV value; dataset minimum ~99
+MAX_BRIGHTNESS = 245.0   # dataset maximum ~227
+MAX_FRUIT_COVER = 0.97   # fruit_mask() falls back to the whole frame when it finds no object
+
+
+def check_photo(image_bgr, mask):
+    """
+    Reject photos the classifier cannot judge, before it is asked to.
+
+    The SVM always answers with one of its three classes, even for a photo with
+    no mango in it, so this screens out the obvious cases: no single object in
+    frame, a very blurry photo, or one that is far too dark or too bright.
+
+    Returns None when the photo is usable, otherwise a short reason code:
+    "no_fruit", "blurry", "dark" or "bright".
+    """
+    h, w = image_bgr.shape[:2]
+    scale = min(1.0, 512 / max(h, w))
+    small = cv2.resize(image_bgr, (max(1, int(w * scale)), max(1, int(h * scale))),
+                       interpolation=cv2.INTER_AREA) if scale < 1.0 else image_bgr
+
+    brightness = float(cv2.cvtColor(small, cv2.COLOR_BGR2HSV)[:, :, 2].mean())
+    if brightness < MIN_BRIGHTNESS:
+        return "dark"
+    if brightness > MAX_BRIGHTNESS:
+        return "bright"
+
+    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+    if float(cv2.Laplacian(gray, cv2.CV_64F).var()) < MIN_SHARPNESS:
+        return "blurry"
+
+    if mask is not None and float((mask > 127).mean()) > MAX_FRUIT_COVER:
+        return "no_fruit"
+
+    return None
+
+
 def merge_boxes(boxes):
     """Merge overlapping or nested (x, y, w, h) boxes until none overlap; largest first."""
     boxes = [list(b) for b in boxes]

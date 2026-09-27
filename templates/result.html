@@ -9,7 +9,7 @@
 {% else %}
     {% set kind = 'stem-rot' %}
 {% endif %}
-{% set verdict_word = prediction | replace('_', ' ') %}
+{% set verdict_word = _(prediction | replace('_', ' ')) %}
 {% set grade_letter = telemetry.grade_letter or ('A' if kind == 'healthy' else 'C') %}
 {% set imperative = telemetry.imperative or {'healthy': 'Ship it.', 'anthracnose': 'Quarantine.', 'stem-rot': 'Trim the stem.'}[kind] %}
 
@@ -40,90 +40,92 @@
         {% if kind == 'healthy' %}
         <p class="status">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
-            No disease found
+            {{ _("No disease found") }}
         </p>
         {% else %}
         <p class="status status-alert">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
-            Disease found
+            {{ _("Disease found") }}
         </p>
         {% endif %}
 
-        <h1 id="verdict-word" class="verdict-word"><span class="visually-hidden">Verdict: </span>{{ verdict_word }}</h1>
+        <h1 id="verdict-word" class="verdict-word"><span class="visually-hidden">{{ _("Verdict:") }} </span>{{ verdict_word }}</h1>
 
-        <p class="imperative">{{ imperative }}</p>
-        <p class="action">{{ telemetry.action }}</p>
+        <p class="imperative">{{ _(imperative) }}</p>
+        <p class="action">{{ _(telemetry.action or "") }}</p>
 
         <div class="verdict-actions">
             <a href="{{ url_for('index') }}" class="btn btn-primary">
-                <span>Scan another mango</span>
+                <span>{{ _("Scan another mango") }}</span>
                 <svg class="icon icon-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
             </a>
             {% if saved_id %}
-            <p class="save-line">Saved to your scans{% if saved_date %} &middot; {{ saved_date }}{% endif %}. <a href="{{ url_for('accounts.scans') }}">See all</a></p>
+            <p class="save-line">{{ _("Saved to your scans") }}{% if saved_date %} &middot; {{ saved_date }}{% endif %}. <a href="{{ url_for('accounts.scans') }}">{{ _("See all") }}</a></p>
             {% elif accounts_enabled and not user %}
-            <p class="save-line"><a href="{{ url_for('accounts.login') }}">Log in</a> or <a href="{{ url_for('accounts.signup') }}">create an account</a> to save your scans.</p>
+            <p class="save-line">{{ _html("{login} or {signup} to save your scans.",
+                login=_html('<a href="' ~ url_for('accounts.login') ~ '">' ~ _('Log in') ~ '</a>'),
+                signup=_html('<a href="' ~ url_for('accounts.signup') ~ '">' ~ _('create an account') ~ '</a>')) }}</p>
             {% endif %}
         </div>
     </section>
 
     <section class="evidence" aria-labelledby="evidence-heading">
-        <h2 id="evidence-heading" class="visually-hidden">Photo evidence</h2>
-        <div class="tabs tabs-small" role="tablist" aria-label="Photo view">
-            <button type="button" class="tab" id="btn-show-detection" role="tab" aria-selected="true" aria-controls="view-detection" tabindex="0">Marked up</button>
-            <button type="button" class="tab" id="btn-show-raw" role="tab" aria-selected="false" aria-controls="view-raw" tabindex="-1">Original</button>
+        <h2 id="evidence-heading" class="visually-hidden">{{ _("Photo evidence") }}</h2>
+        <div class="tabs tabs-small" role="tablist" aria-label="{{ _('Photo view') }}">
+            <button type="button" class="tab" id="btn-show-detection" role="tab" aria-selected="true" aria-controls="view-detection" tabindex="0">{{ _("Marked up") }}</button>
+            <button type="button" class="tab" id="btn-show-raw" role="tab" aria-selected="false" aria-controls="view-raw" tabindex="-1">{{ _("Original") }}</button>
         </div>
         <figure class="evidence-photo">
-            <img id="view-detection" role="tabpanel" aria-labelledby="btn-show-detection" src="{{ annotated_url }}" alt="Photo of the mango with detected defect regions boxed">
-            <img id="view-raw" role="tabpanel" aria-labelledby="btn-show-raw" src="{{ image_url }}" alt="Original photo of the mango" hidden>
+            <img id="view-detection" role="tabpanel" aria-labelledby="btn-show-detection" src="{{ annotated_url }}" alt="{{ _('Photo of the mango with detected defect regions boxed') }}">
+            <img id="view-raw" role="tabpanel" aria-labelledby="btn-show-raw" src="{{ image_url }}" alt="{{ _('Original photo of the mango') }}" hidden>
         </figure>
     </section>
 
     <section class="controls" aria-labelledby="readings-heading">
-        <h2 id="readings-heading" class="visually-hidden">Readings</h2>
+        <h2 id="readings-heading" class="visually-hidden">{{ _("Readings") }}</h2>
         <dl class="readouts">
             <div class="readout readout-plain">
-                <dt>Grade</dt>
-                <dd><span class="readout-value">{{ grade_letter }}</span> <small>{{ telemetry.grade }}</small></dd>
+                <dt>{{ _("Grade") }}</dt>
+                <dd><span class="readout-value">{{ grade_letter }}</span> <small>{{ _(telemetry.grade or "") }}</small></dd>
             </div>
-            {{ readout('Defect coverage', '%.1f%%' | format(coverage_pct), coverage_note, coverage_pct, '0%', '100%', lead=True) }}
+            {{ readout(_('Defect coverage'), '%.1f%%' | format(coverage_pct), _(coverage_note), coverage_pct, '0%', '100%', lead=True) }}
         </dl>
     </section>
 </div>
 
 <details class="more">
-    <summary>Technical details</summary>
+    <summary>{{ _("Technical details") }}</summary>
     <div class="more-body">
         <dl class="readouts">
             {% if confidence is not none %}
-            {{ readout('Model confidence', '%.1f%%' | format(confidence * 100), '', confidence * 100, '0%', '100%') }}
+            {{ readout(_('Model confidence'), '%.1f%%' | format(confidence * 100), '', confidence * 100, '0%', '100%') }}
             {% endif %}
-            {{ readout('Mean hue', '%.1f' | format(hue), '/ 180', hue / 180 * 100, '0', '180') }}
-            {{ readout('Saturation', '%.1f' | format(sat), '/ 255', sat / 255 * 100, '0', '255') }}
+            {{ readout(_('Mean hue'), '%.1f' | format(hue), '/ 180', hue / 180 * 100, '0', '180') }}
+            {{ readout(_('Saturation'), '%.1f' | format(sat), '/ 255', sat / 255 * 100, '0', '255') }}
             <div class="readout readout-plain">
-                <dt>Photo size</dt>
+                <dt>{{ _("Photo size") }}</dt>
                 <dd><span class="readout-value">{{ metrics.resolution }}</span></dd>
             </div>
         </dl>
-        <p class="more-note">How MangoScan read this fruit: 32,795 colour, texture and shape values, then a trained model picked the answer.</p>
+        <p class="more-note">{{ _("How MangoScan read this fruit: 32,795 colour, texture and shape values, then a trained model picked the answer.") }}</p>
         {{ pipeline(done=True) }}
-        <p class="more-note">Coverage is an Otsu-threshold estimate of dark peel area, not a lab measurement.</p>
+        <p class="more-note">{{ _("Coverage is an Otsu-threshold estimate of dark peel area, not a lab measurement.") }}</p>
     </div>
 </details>
 
 {% if saved_id %}
 <div class="delete-form">
-    <button type="button" class="link-btn" id="btn-delete-open" aria-haspopup="dialog">Delete this scan</button>
+    <button type="button" class="link-btn" id="btn-delete-open" aria-haspopup="dialog">{{ _("Delete this scan") }}</button>
 </div>
 
 <dialog class="modal" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
     <form method="POST" action="{{ url_for('accounts.scan_delete', scan_id=saved_id) }}" class="modal-body" id="delete-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <h2 class="modal-title" id="delete-title">Delete this scan?</h2>
-        <p class="modal-desc" id="delete-desc">The photos and the reading will be removed from My scans. You can't undo this.</p>
+        <h2 class="modal-title" id="delete-title">{{ _("Delete this scan?") }}</h2>
+        <p class="modal-desc" id="delete-desc">{{ _("The photos and the reading will be removed from My scans. You can't undo this.") }}</p>
         <div class="modal-actions">
-            <button type="button" class="btn btn-outline" id="btn-delete-cancel">Cancel</button>
-            <button type="submit" class="btn btn-destructive" id="btn-delete-confirm">Delete scan</button>
+            <button type="button" class="btn btn-outline" id="btn-delete-cancel">{{ _("Cancel") }}</button>
+            <button type="submit" class="btn btn-destructive" id="btn-delete-confirm">{{ _("Delete scan") }}</button>
         </div>
     </form>
 </dialog>
@@ -147,7 +149,7 @@
     dialog.addEventListener('close', () => opener.focus());
     document.getElementById('delete-form').addEventListener('submit', () => {
         confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Deleting…';
+        confirmBtn.textContent = {{ _('Deleting…')|tojson }};
     });
 })();
 </script>
