@@ -112,15 +112,46 @@
 </details>
 
 {% if saved_id %}
-<form method="POST" action="{{ url_for('accounts.scan_delete', scan_id=saved_id) }}" class="delete-form"
-      onsubmit="return confirm('Delete this scan and its photos? This cannot be undone.');">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="link-btn">Delete this scan</button>
-</form>
+<div class="delete-form">
+    <button type="button" class="link-btn" id="btn-delete-open" aria-haspopup="dialog">Delete this scan</button>
+</div>
+
+<dialog class="modal" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
+    <form method="POST" action="{{ url_for('accounts.scan_delete', scan_id=saved_id) }}" class="modal-body" id="delete-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2 class="modal-title" id="delete-title">Delete this scan?</h2>
+        <p class="modal-desc" id="delete-desc">The photos and the reading will be removed from My scans. You can't undo this.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="btn-delete-cancel">Cancel</button>
+            <button type="submit" class="btn btn-destructive" id="btn-delete-confirm">Delete scan</button>
+        </div>
+    </form>
+</dialog>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
+{% if saved_id %}
+<script>
+(() => {
+    const dialog = document.getElementById('delete-dialog');
+    const opener = document.getElementById('btn-delete-open');
+    const confirmBtn = document.getElementById('btn-delete-confirm');
+    opener.addEventListener('click', () => {
+        dialog.showModal();
+        document.getElementById('btn-delete-cancel').focus();  // the safe choice is focused first
+    });
+    document.getElementById('btn-delete-cancel').addEventListener('click', () => dialog.close());
+    // A tap on the dimmed backdrop cancels, like Escape
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => opener.focus());
+    document.getElementById('delete-form').addEventListener('submit', () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Deleting…';
+    });
+})();
+</script>
+{% endif %}
 <script>
 (() => {
     const tabs = [document.getElementById('btn-show-detection'), document.getElementById('btn-show-raw')];

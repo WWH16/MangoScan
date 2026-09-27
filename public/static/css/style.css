@@ -694,6 +694,41 @@ img { max-width: 100%; display: block; }
 .delete-form { margin-top: var(--space-4); }
 .delete-form .link-btn { color: var(--destructive); text-decoration-color: #fca5a5; }
 
+/* ---------- Alert dialog (delete confirmation) ---------- */
+
+.btn-outline { background: var(--background); border-color: var(--input); color: var(--foreground); box-shadow: var(--shadow-xs); }
+.btn-outline:hover:not(:disabled) { background: var(--secondary); }
+.btn-destructive { background: var(--destructive); color: #fff; box-shadow: var(--shadow-xs); }
+.btn-destructive:hover:not(:disabled) { background: #b91c1c; }
+
+.modal {
+    width: min(440px, calc(100% - 32px));
+    max-width: none;
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+.modal[open] { animation: zoom-in 200ms var(--ease-out); }
+.modal::backdrop { background: rgb(0 0 0 / 0.6); animation: fade-in 150ms ease-out; }
+.modal-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5); }
+.modal-title { margin: 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+.modal-desc { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--muted-foreground); }
+.modal-actions {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+.modal-actions .btn { width: 100%; }
+@media (min-width: 480px) {
+    .modal-actions { flex-direction: row; justify-content: flex-end; }
+    .modal-actions .btn { width: auto; }
+}
+
 /* ---------- Account pages ---------- */
 
 .screen-auth .page { display: grid; align-content: start; justify-items: center; padding-top: var(--space-6); }
