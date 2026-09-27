@@ -24,6 +24,11 @@ import accounts
 IS_VERCEL = bool(os.environ.get("VERCEL"))
 
 app = Flask(__name__)
+if IS_VERCEL:
+    # Vercel terminates HTTPS at its proxy; trust its forwarded headers so
+    # external links (email confirmation redirects) are built as https://<domain>
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # The session cookie carries the user's login, so the signing key must be secret and stable
 secret_key = os.environ.get("MANGOSCAN_SECRET_KEY", "").strip()
