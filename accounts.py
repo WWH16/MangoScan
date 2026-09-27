@@ -589,7 +589,7 @@ def _normalise(text):
 @bp.route("/account/delete", methods=["POST"])
 @login_required
 def account_delete():
-    """Remove the user's photos, then their account; their scan rows go with it."""
+    """Remove the user's account (their scan rows go with it), then their photos."""
     _check_csrf()
     # The user must type their name (or email, when no name is set), like deleting a GitHub repository
     expected = g.user.get("name") or g.user.get("email") or ""
@@ -598,15 +598,20 @@ def account_delete():
         return redirect(url_for("accounts.settings"))
     sb = client(g.user["at"])
     try:
+        # Read the photo paths first: the scan rows are gone once the account is
         rows = sb.table("scans").select("raw_path, ann_path").execute().data or []
         paths = [p for r in rows for p in (r.get("raw_path"), r.get("ann_path")) if p]
-        for i in range(0, len(paths), 100):
-            sb.storage.from_(BUCKET).remove(paths[i:i + 100])
         sb.rpc("delete_own_account").execute()
     except Exception:
         current_app.logger.exception("Account deletion failed")
         flash(t("Your account could not be deleted. Try again, or contact the MangoScan team."), "error")
         return redirect(url_for("accounts.settings"))
+    # The account is gone, so a photo that fails to delete is only logged; nobody can open it now
+    try:
+        for i in range(0, len(paths), 100):
+            sb.storage.from_(BUCKET).remove(paths[i:i + 100])
+    except Exception:
+        current_app.logger.exception("Photos left behind after account deletion")
     _clear_session()
     flash(t("Your account and all your saved scans were deleted."))
     return redirect(url_for("index"))
