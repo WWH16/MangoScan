@@ -20,6 +20,7 @@ FIL = {
     # ---------- Header and footer ----------
     "Skip to content": "Lumaktaw sa nilalaman",
     "MangoScan home": "Home ng MangoScan",
+    "MangoScan, start a new scan": "MangoScan, magsimula ng bagong scan",
     "Mango disease checker": "Pantingin ng sakit ng mangga",
     "My scans": "Aking mga scan",
     "Log in": "Mag-log in",
