@@ -779,6 +779,18 @@ img { max-width: 100%; display: block; }
 .modal-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5); }
 .modal-title { margin: 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
 .modal-desc { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--muted-foreground); }
+.confirm-field { margin-top: var(--space-3); }
+.confirm-field label { font-weight: 400; line-height: 1.5; }
+.confirm-word {
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--muted);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    -webkit-user-select: all;
+    user-select: all;
+}
 .modal-actions {
     display: flex;
     flex-direction: column-reverse;

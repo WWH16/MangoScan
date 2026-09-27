@@ -581,11 +581,21 @@ def scan_delete(scan_id):
 
 # ---------- Delete account ----------
 
+def _normalise(text):
+    """Spaces trimmed and collapsed, capital letters ignored."""
+    return " ".join(text.split()).casefold()
+
+
 @bp.route("/account/delete", methods=["POST"])
 @login_required
 def account_delete():
     """Remove the user's photos, then their account; their scan rows go with it."""
     _check_csrf()
+    # The user must type their name (or email, when no name is set), like deleting a GitHub repository
+    expected = g.user.get("name") or g.user.get("email") or ""
+    if _normalise(request.form.get("confirm", "")) != _normalise(expected):
+        flash(t("What you typed does not match. Your account was not deleted."), "error")
+        return redirect(url_for("accounts.settings"))
     sb = client(g.user["at"])
     try:
         rows = sb.table("scans").select("raw_path, ann_path").execute().data or []

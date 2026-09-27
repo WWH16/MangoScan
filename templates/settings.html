@@ -120,14 +120,21 @@
 </div>
 
 {% if user %}
+{% set confirm_word = user.name or user.email %}
 <dialog class="modal" id="account-dialog" aria-labelledby="account-title" aria-describedby="account-desc">
-    <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form">
+    <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <h2 class="modal-title" id="account-title">{{ _("Delete your account?") }}</h2>
         <p class="modal-desc" id="account-desc">{{ _("Your account, all your saved scans and their photos will be deleted for good. You can't undo this.") }}</p>
+        <div class="field confirm-field">
+            <label for="f-confirm">{{ _html("To confirm, type {word} below.", word=_html('<span class="confirm-word">') ~ confirm_word ~ _html('</span>')) }}</label>
+            <input id="f-confirm" name="confirm" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                   data-expect="{{ confirm_word }}" aria-describedby="f-confirm-hint">
+            <p class="field-hint" id="f-confirm-hint">{{ _("Capital letters do not matter.") }}</p>
+        </div>
         <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="btn-account-cancel">{{ _("Cancel") }}</button>
-            <button type="submit" class="btn btn-destructive" id="btn-account-confirm" data-loading-text="{{ _('Deleting…') }}"><span>{{ _("Delete account") }}</span></button>
+            <button type="submit" class="btn btn-destructive" id="btn-account-confirm" data-loading-text="{{ _('Deleting…') }}" disabled><span>{{ _("Delete my account") }}</span></button>
         </div>
     </form>
 </dialog>
@@ -166,10 +173,26 @@
     if (!dialog) return;
     const opener = document.getElementById('btn-account-delete');
     const cancel = document.getElementById('btn-account-cancel');
-    opener.addEventListener('click', () => { dialog.showModal(); cancel.focus(); });
+    const confirmBtn = document.getElementById('btn-account-confirm');
+    const typed = document.getElementById('f-confirm');
+    // Same rule as the server: spaces trimmed, capital letters ignored
+    const norm = (s) => s.trim().replace(/\s+/g, ' ').toLowerCase();
+    const expected = norm(typed.dataset.expect);
+    const matches = () => norm(typed.value) === expected;
+
+    opener.addEventListener('click', () => {
+        typed.value = '';
+        confirmBtn.disabled = true;
+        dialog.showModal();
+        typed.focus();
+    });
+    typed.addEventListener('input', () => { confirmBtn.disabled = !matches(); });
     cancel.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
     dialog.addEventListener('close', () => opener.focus());
+    document.getElementById('account-form').addEventListener('submit', (e) => {
+        if (!matches()) { e.preventDefault(); typed.focus(); }
+    });
 })();
 </script>
 {% endblock %}

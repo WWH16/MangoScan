@@ -212,6 +212,10 @@ FIL = {
     "Saving…": "Sine-save…",
     "Logging out…": "Nagla-log out…",
     "Notifications": "Mga abiso",
+    "To confirm, type {word} below.": "Para kumpirmahin, i-type ang {word} sa ibaba.",
+    "Capital letters do not matter.": "Hindi mahalaga kung malaki o maliit ang titik.",
+    "What you typed does not match. Your account was not deleted.":
+        "Hindi tugma ang na-type mo. Hindi nabura ang iyong account.",
     "Confirming": "Kinukumpirma",
     "One moment.": "Sandali lang.",
     "This link does not work.": "Hindi gumagana ang link na ito.",
