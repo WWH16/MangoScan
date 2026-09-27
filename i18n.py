@@ -462,6 +462,10 @@ FIL = {
     "Log in or create a free account to keep every result.":
         "Mag-log in o gumawa ng libreng account para ma-save ang bawat resulta.",
     "Screen guides": "Mga gabay sa screen",
+    "On this phone": "Sa phone na ito",
+    "Show how each screen works, the first time": "Ipakita kung paano gamitin ang bawat screen, sa unang beses",
+    "Opens like an app from your home screen": "Bubukas na parang app mula sa home screen",
+    "Not set": "Wala pa",
     "A short guide shows how each screen works the first time you open it.":
         "May maikling gabay na nagpapakita kung paano gamitin ang bawat screen sa unang beses mo itong buksan.",
     "On": "Bukas",

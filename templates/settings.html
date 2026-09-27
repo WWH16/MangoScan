@@ -3,15 +3,15 @@
 {% from "_guide.html" import guide %}
 
 {% block guide %}{{ guide("settings", [
-    {"target": ".segmented", "title": _("Language"),
+    {"target": "#row-lang", "title": _("Language"),
      "text": _("Choose English or Filipino. This phone remembers your choice.")},
-    {"target": "#install", "title": _("Put MangoScan on your phone"),
-     "text": _("Add it to your home screen and it opens like an app, straight to scanning.")},
     {"target": "#guides", "title": _("These guides"),
      "text": _("Turn the guides off here, or show them all again.")},
-    {"target": ".card-danger", "title": _("Your data"),
+    {"target": "#install", "title": _("Put MangoScan on your phone"),
+     "text": _("Add it to your home screen and it opens like an app, straight to scanning.")},
+    {"target": "#danger-zone", "title": _("Your data"),
      "text": _("You can delete your account, every saved scan and every photo at any time.")},
-    {"target": "[aria-labelledby='set-account']", "title": _("Save your scans"),
+    {"target": "#account-signin", "title": _("Save your scans"),
      "text": _("Log in or create a free account to keep every result.")}
 ]) }}{% endblock %}
 
@@ -27,6 +27,8 @@
 {% endif %}
 {% endmacro %}
 
+{% set chevron %}<svg class="icon set-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>{% endset %}
+
 {% block content %}
 <div class="settings">
     <div class="settings-head">
@@ -34,118 +36,127 @@
         <p class="lede">{{ _("Language, app install and your account.") }}</p>
     </div>
 
-    <!-- Language -->
-    <section class="card" aria-labelledby="set-lang">
-        <div class="card-head">
-            <h2 class="card-title" id="set-lang">{{ _("Language") }}</h2>
-            <p class="card-desc">{{ _("Choose the language MangoScan uses on this phone.") }}</p>
-        </div>
-        <div class="segmented" role="group" aria-labelledby="set-lang">
-            <a class="segment" href="{{ url_for('i18n.set_lang', code='en', next=url_for('accounts.settings')) }}" lang="en"
-               {% if lang == 'en' %}aria-current="true"{% endif %}>English</a>
-            <a class="segment" href="{{ url_for('i18n.set_lang', code='fil', next=url_for('accounts.settings')) }}" lang="fil"
-               {% if lang == 'fil' %}aria-current="true"{% endif %}>Filipino</a>
-        </div>
-    </section>
+    <!-- This phone: language, guides, install -->
+    <section class="set-group" aria-labelledby="grp-phone">
+        <h2 class="set-group-title" id="grp-phone">{{ _("On this phone") }}</h2>
+        <div class="set-list">
+            <div class="set-row" id="row-lang">
+                <p class="set-text"><span class="set-name" id="set-lang">{{ _("Language") }}</span></p>
+                <div class="segmented segmented-inline" role="group" aria-labelledby="set-lang">
+                    <a class="segment" href="{{ url_for('i18n.set_lang', code='en', next=url_for('accounts.settings')) }}" lang="en"
+                       {% if lang == 'en' %}aria-current="true"{% endif %}>English</a>
+                    <a class="segment" href="{{ url_for('i18n.set_lang', code='fil', next=url_for('accounts.settings')) }}" lang="fil"
+                       {% if lang == 'fil' %}aria-current="true"{% endif %}>Filipino</a>
+                </div>
+            </div>
 
-    <!-- Install -->
-    <section class="card" id="install" aria-labelledby="set-install">
-        <div class="card-head">
-            <h2 class="card-title" id="set-install">{{ _("Install MangoScan") }}</h2>
-            <p class="card-desc">{{ _("Add MangoScan to your home screen so it opens like an app.") }}</p>
-        </div>
-        <button type="button" class="btn btn-outline" id="btn-install" hidden>
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-            <span>{{ _("Add to home screen") }}</span>
-        </button>
-        <p class="install-note" id="install-done" hidden>{{ _("MangoScan is installed on this phone.") }}</p>
-        <p class="install-note" id="install-manual">{{ _("In your browser menu, tap “Add to Home screen” or “Install app”. On iPhone, tap Share, then “Add to Home Screen”.") }}</p>
-    </section>
+            <!-- Guides are remembered on the phone, so these rows only appear when it can store them -->
+            <div class="set-row" id="guides" hidden>
+                <p class="set-text">
+                    <span class="set-name" id="set-guides">{{ _("Screen guides") }}</span>
+                    <span class="set-hint">{{ _("Show how each screen works, the first time") }}</span>
+                </p>
+                <div class="segmented segmented-inline" role="group" aria-labelledby="set-guides">
+                    <button type="button" class="segment" data-guides="on">{{ _("On") }}</button>
+                    <button type="button" class="segment" data-guides="off">{{ _("Off") }}</button>
+                </div>
+            </div>
+            <button type="button" class="set-row set-action" id="btn-guides-reset" hidden>
+                <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                <span class="set-name">{{ _("Show all guides again") }}</span>
+            </button>
 
-    <!-- Screen guides: kept on the phone, so the card only appears when the phone can store it -->
-    <section class="card" id="guides" aria-labelledby="set-guides" hidden>
-        <div class="card-head">
-            <h2 class="card-title" id="set-guides">{{ _("Screen guides") }}</h2>
-            <p class="card-desc">{{ _("A short guide shows how each screen works the first time you open it.") }}</p>
+            <details class="set-disclosure" id="install">
+                <summary class="set-row">
+                    <span class="set-text">
+                        <span class="set-name">{{ _("Install MangoScan") }}</span>
+                        <span class="set-hint">{{ _("Opens like an app from your home screen") }}</span>
+                    </span>
+                    <span class="set-value" id="install-state" hidden>{{ _("Installed") }}</span>
+                    {{ chevron }}
+                </summary>
+                <div class="set-body">
+                    <p class="install-note" id="install-done" hidden>{{ _("MangoScan is installed on this phone.") }}</p>
+                    <p class="install-note" id="install-manual">{{ _("In your browser menu, tap “Add to Home screen” or “Install app”. On iPhone, tap Share, then “Add to Home Screen”.") }}</p>
+                    <button type="button" class="btn btn-outline" id="btn-install" hidden>
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+                        <span>{{ _("Add to home screen") }}</span>
+                    </button>
+                </div>
+            </details>
         </div>
-        <div class="segmented" role="group" aria-labelledby="set-guides">
-            <button type="button" class="segment" data-guides="on">{{ _("On") }}</button>
-            <button type="button" class="segment" data-guides="off">{{ _("Off") }}</button>
-        </div>
-        <button type="button" class="btn btn-outline" id="btn-guides-reset">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>{{ _("Show all guides again") }}</span>
-        </button>
     </section>
 
     {% if accounts_enabled %}
-    {% if user %}
-    <!-- Profile -->
-    <section class="card" aria-labelledby="set-profile">
-        <div class="card-head">
-            <h2 class="card-title" id="set-profile">{{ _("Profile") }}</h2>
-            <p class="card-desc">{{ _("Signed in as {email}.", email=user.email) }}</p>
-        </div>
-        {{ section_error(errors.form_profile) }}
-        <form class="auth-form" method="POST" action="{{ url_for('accounts.settings_profile') }}" novalidate>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {{ field("name", _("Full name"), errors, value=form.name, autocomplete="name") }}
-            <div class="card-actions">
-                <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Save name") }}</span></button>
+    <!-- Account -->
+    <section class="set-group" aria-labelledby="grp-account">
+        <h2 class="set-group-title" id="grp-account">{{ _("Account") }}</h2>
+        {% if user %}
+        <div class="set-list">
+            <details class="set-disclosure"{% if errors.name or errors.form_profile %} open{% endif %}>
+                <summary class="set-row">
+                    <span class="set-text"><span class="set-name">{{ _("Name") }}</span></span>
+                    <span class="set-value">{{ user.name or _("Not set") }}</span>
+                    {{ chevron }}
+                </summary>
+                <form class="set-body auth-form" method="POST" action="{{ url_for('accounts.settings_profile') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {{ section_error(errors.form_profile) }}
+                    {{ field("name", _("Full name"), errors, value=form.name, autocomplete="name") }}
+                    <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Save name") }}</span></button>
+                </form>
+            </details>
+
+            <div class="set-row">
+                <p class="set-text set-text-fit"><span class="set-name">{{ _("Email") }}</span></p>
+                <span class="set-value set-value-plain">{{ user.email }}</span>
             </div>
-        </form>
-    </section>
 
-    <!-- Password -->
-    <section class="card" aria-labelledby="set-password">
-        <div class="card-head">
-            <h2 class="card-title" id="set-password">{{ _("Password") }}</h2>
-            <p class="card-desc">{{ _("Enter your current password, then the new one.") }}</p>
-        </div>
-        {{ section_error(errors.form_password) }}
-        <form class="auth-form" method="POST" action="{{ url_for('accounts.settings_password') }}" novalidate>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {{ field("current_password", _("Current password"), errors, type="password", autocomplete="current-password") }}
-            {{ field("new_password", _("New password"), errors, type="password", autocomplete="new-password", hint=_("At least 8 characters.")) }}
-            <div class="card-actions">
-                <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Change password") }}</span></button>
-            </div>
-        </form>
-    </section>
+            <details class="set-disclosure"{% if errors.current_password or errors.new_password or errors.form_password %} open{% endif %}>
+                <summary class="set-row">
+                    <span class="set-text"><span class="set-name">{{ _("Password") }}</span></span>
+                    <span class="set-value">{{ _("Change") }}</span>
+                    {{ chevron }}
+                </summary>
+                <form class="set-body auth-form" method="POST" action="{{ url_for('accounts.settings_password') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {{ section_error(errors.form_password) }}
+                    {{ field("current_password", _("Current password"), errors, type="password", autocomplete="current-password") }}
+                    {{ field("new_password", _("New password"), errors, type="password", autocomplete="new-password", hint=_("At least 8 characters.")) }}
+                    <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Change password") }}</span></button>
+                </form>
+            </details>
 
-    <!-- Session -->
-    <section class="card card-row" aria-labelledby="set-session">
-        <div class="card-head">
-            <h2 class="card-title" id="set-session">{{ _("Log out") }}</h2>
-            <p class="card-desc">{{ _("Log out of MangoScan on this phone.") }}</p>
+            <form class="set-row-form" method="POST" action="{{ url_for('accounts.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="set-row set-action">
+                    <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+                    <span class="set-name">{{ _("Log out") }}</span>
+                </button>
+            </form>
         </div>
-        <form method="POST" action="{{ url_for('accounts.logout') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline" data-loading-text="{{ _('Logging out…') }}"><span>{{ _("Log out") }}</span></button>
-        </form>
-    </section>
 
-    <!-- Danger zone -->
-    <section class="card card-danger card-row" aria-labelledby="set-delete">
-        <div class="card-head">
-            <h2 class="card-title" id="set-delete">{{ _("Delete account") }}</h2>
-            <p class="card-desc">{{ _("Permanently delete your account, all saved scans and their photos.") }}</p>
+        <div class="set-list set-list-danger" id="danger-zone">
+            <button type="button" class="set-row set-action set-danger" id="btn-account-delete" aria-haspopup="dialog" aria-describedby="delete-note">
+                <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>
+                <span class="set-name">{{ _("Delete account") }}</span>
+            </button>
         </div>
-        <button type="button" class="btn btn-destructive" id="btn-account-delete" aria-haspopup="dialog">{{ _("Delete account") }}</button>
+        <p class="set-foot" id="delete-note">{{ _("Permanently delete your account, all saved scans and their photos.") }}</p>
+        {% else %}
+        <div class="set-list" id="account-signin">
+            <a class="set-row set-action" href="{{ url_for('accounts.login', next=url_for('accounts.settings')) }}">
+                <span class="set-text"><span class="set-name">{{ _("Log in") }}</span></span>
+                {{ chevron }}
+            </a>
+            <a class="set-row set-action" href="{{ url_for('accounts.signup', next=url_for('accounts.settings')) }}">
+                <span class="set-text"><span class="set-name">{{ _("Create account") }}</span></span>
+                {{ chevron }}
+            </a>
+        </div>
+        <p class="set-foot">{{ _("Log in to save your scans and find them again on any phone. Scanning works without an account.") }}</p>
+        {% endif %}
     </section>
-    {% else %}
-    <!-- Account (logged out) -->
-    <section class="card" aria-labelledby="set-account">
-        <div class="card-head">
-            <h2 class="card-title" id="set-account">{{ _("Account") }}</h2>
-            <p class="card-desc">{{ _("Log in to save your scans and find them again on any phone. Scanning works without an account.") }}</p>
-        </div>
-        <div class="card-actions">
-            <a class="btn btn-primary" href="{{ url_for('accounts.login', next=url_for('accounts.settings')) }}">{{ _("Log in") }}</a>
-            <a class="btn btn-outline" href="{{ url_for('accounts.signup', next=url_for('accounts.settings')) }}">{{ _("Create account") }}</a>
-        </div>
-    </section>
-    {% endif %}
     {% endif %}
 </div>
 
@@ -176,11 +187,15 @@
 <script>
 (() => {
     // Install: use the browser's own prompt when it offers one, otherwise keep the manual steps
+    const install = document.getElementById('install');
     const installBtn = document.getElementById('btn-install');
     const manual = document.getElementById('install-manual');
     const done = document.getElementById('install-done');
-    const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-    if (standalone) { manual.hidden = true; done.hidden = false; }
+    const state = document.getElementById('install-state');
+    const markInstalled = () => { installBtn.hidden = true; manual.hidden = true; done.hidden = false; state.hidden = false; };
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) markInstalled();
+    // "How to install" on the landing page links here
+    if (location.hash === '#install') install.open = true;
     let deferred = null;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -194,19 +209,20 @@
         const choice = await deferred.userChoice;
         deferred = null;
         installBtn.hidden = true;
-        if (choice.outcome === 'accepted') done.hidden = false; else manual.hidden = false;
+        if (choice.outcome === 'accepted') markInstalled(); else manual.hidden = false;
     });
-    window.addEventListener('appinstalled', () => { installBtn.hidden = true; manual.hidden = true; done.hidden = false; });
+    window.addEventListener('appinstalled', markInstalled);
 
     // Screen guides on or off, and a fresh start
-    const guidesCard = document.getElementById('guides');
+    const guidesRow = document.getElementById('guides');
+    const resetBtn = document.getElementById('btn-guides-reset');
     if (MangoGuide.available()) {
         const T = {{ {
             "on": _("Guides are on. Each screen shows its guide the first time."),
             "off": _("Guides are off. Tap the question mark on any screen to see its guide."),
             "reset": _("Every screen will show its guide again.")
         } | tojson }};
-        const segments = [...guidesCard.querySelectorAll('[data-guides]')];
+        const segments = [...guidesRow.querySelectorAll('[data-guides]')];
         const paint = () => {
             const off = MangoGuide.isOff();
             segments.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.guides === 'off') === off)));
@@ -218,13 +234,14 @@
             paint();
             MangoToast.show(off ? T.off : T.on);
         }));
-        document.getElementById('btn-guides-reset').addEventListener('click', () => {
+        resetBtn.addEventListener('click', () => {
             MangoGuide.reset();
             paint();
             MangoToast.show(T.reset);
         });
         paint();
-        guidesCard.hidden = false;
+        guidesRow.hidden = false;
+        resetBtn.hidden = false;
     }
 
     // Delete account dialog
