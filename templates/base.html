@@ -41,11 +41,6 @@
     </header>
 
     <main id="main" class="page">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-        <div class="flash{% if category == 'error' %} flash-error{% endif %}" role="{{ 'alert' if category == 'error' else 'status' }}"><p>{{ message }}</p></div>
-        {% endfor %}
-        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
@@ -56,7 +51,73 @@
         {% endif %}
     </footer>
 
+    {# Toasts: messages from the server arrive here; page scripts add their own with MangoToast.show() #}
+    <section class="toaster" id="toaster" aria-label="{{ _('Notifications') }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="toast{% if category == 'error' %} toast-error{% endif %}" role="{{ 'alert' if category == 'error' else 'status' }}">
+            {% if category == 'error' %}
+            <svg class="icon toast-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {% else %}
+            <svg class="icon toast-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12.5 2.5 2.5L16 9.5"/></svg>
+            {% endif %}
+            <p class="toast-text">{{ message }}</p>
+            <button type="button" class="toast-close" aria-label="{{ _('Dismiss message') }}">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        {% endfor %}
+        {% endwith %}
+    </section>
+
     <script>
+    // Toasts close on their own after a while (errors stay until closed).
+    // The timer pauses while a finger or pointer rests on the toast, or it has focus.
+    window.MangoToast = (() => {
+        const toaster = document.getElementById('toaster');
+        const closeLabel = {{ _('Dismiss message')|tojson }};
+        const icons = {
+            success: '<circle cx="12" cy="12" r="10"/><path d="m8 12.5 2.5 2.5L16 9.5"/>',
+            error: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+        };
+
+        function dismiss(toast) {
+            if (toast.classList.contains('is-leaving')) return;
+            toast.classList.add('is-leaving');
+            toast.addEventListener('animationend', () => toast.remove(), { once: true });
+            setTimeout(() => toast.remove(), 400);  // in case animations are off
+        }
+
+        function arm(toast) {
+            toast.querySelector('.toast-close').addEventListener('click', () => dismiss(toast));
+            if (toast.classList.contains('toast-error')) return;
+            let left = 6000, started = Date.now(), timer = setTimeout(() => dismiss(toast), left);
+            const pause = () => { clearTimeout(timer); left -= Date.now() - started; };
+            const resume = () => { started = Date.now(); timer = setTimeout(() => dismiss(toast), Math.max(left, 1500)); };
+            toast.addEventListener('pointerenter', pause);
+            toast.addEventListener('pointerleave', resume);
+            toast.addEventListener('focusin', pause);
+            toast.addEventListener('focusout', resume);
+        }
+
+        function show(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (type === 'error' ? ' toast-error' : '');
+            toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+            toast.innerHTML = '<svg class="icon toast-icon" viewBox="0 0 24 24" aria-hidden="true">' + (icons[type] || icons.success) + '</svg>'
+                + '<p class="toast-text"></p>'
+                + '<button type="button" class="toast-close"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+            toast.querySelector('.toast-text').textContent = message;
+            toast.querySelector('.toast-close').setAttribute('aria-label', closeLabel);
+            toaster.append(toast);
+            arm(toast);
+            return toast;
+        }
+
+        toaster.querySelectorAll('.toast').forEach(arm);
+        return { show, dismiss };
+    })();
+
     // Buttons that submit a form show a spinner until the next page arrives.
     // A button's data-loading-text replaces its label while it waits.
     window.MangoLoading = (() => {

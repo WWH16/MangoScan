@@ -211,6 +211,7 @@ FIL = {
     "Please wait…": "Sandali lang…",
     "Saving…": "Sine-save…",
     "Logging out…": "Nagla-log out…",
+    "Notifications": "Mga abiso",
     "Confirming": "Kinukumpirma",
     "One moment.": "Sandali lang.",
     "This link does not work.": "Hindi gumagana ang link na ito.",
