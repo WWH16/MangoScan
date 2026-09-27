@@ -1,7 +1,7 @@
 // MangoScan service worker: makes the app installable and shows a friendly
 // page when there is no signal. Scanning itself always needs the internet.
 // Bump VERSION when CSS, fonts or icons change so phones fetch the new files.
-const VERSION = 'mangoscan-v2';
+const VERSION = 'mangoscan-v3';
 const SHELL = [
     '/offline',
     '/static/css/style.css',

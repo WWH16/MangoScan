@@ -44,8 +44,8 @@ FIL = {
     "Take a photo": "Kumuha ng litrato",
     "Fill the frame with one mango. Use a plain background and even light, with the stem end showing.":
         "Punuin ng isang mangga ang litrato. Gumamit ng payak na background at pantay na liwanag, at dapat kita ang tangkay.",
-    "Example photo: one mango filling the frame on a plain background":
-        "Halimbawang litrato: isang manggang puno sa litrato, payak ang background",
+    "Example photo: one mango filling the frame":
+        "Halimbawang litrato: isang manggang puno sa litrato",
     "MangoScan checks the peel": "Sinusuri ng MangoScan ang balat",
     "It looks at the colour, texture and shape of the skin. This takes a few seconds.":
         "Tinitingnan nito ang kulay, tekstura at hugis ng balat. Ilang segundo lang ito.",

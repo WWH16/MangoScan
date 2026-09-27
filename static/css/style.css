@@ -1030,7 +1030,7 @@ img { max-width: 100%; display: block; }
     border-radius: var(--radius-lg);
     background: var(--muted);
 }
-.frame img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
+.frame img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; object-position: center 70%; }
 .frame .corner { border-color: #fff; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5)); }
 .frame .corner.tl, .frame .corner.tr { top: 8%; }
 .frame .corner.bl, .frame .corner.br { bottom: 8%; }
@@ -1049,6 +1049,7 @@ img { max-width: 100%; display: block; }
     box-shadow: var(--shadow-sm);
 }
 /* One pass of the scan line, top to bottom, while the list ticks (4 steps x 700ms) */
+.demo-photo { background-position: center 70%; }
 .demo-photo::after { opacity: 0; animation: none; }
 .check-demo.is-playing .demo-photo::after {
     opacity: 1;
@@ -1068,7 +1069,7 @@ img { max-width: 100%; display: block; }
     background: var(--card);
     box-shadow: var(--shadow-sm);
 }
-.answer-demo img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-bottom: 1px solid var(--border); }
+.answer-demo img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; object-position: center 70%; border-bottom: 1px solid var(--border); }
 .answer-body { padding: var(--space-5) var(--space-5) var(--space-4); }
 .answer-word {
     margin: var(--space-3) 0 0;

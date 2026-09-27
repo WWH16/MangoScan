@@ -31,11 +31,11 @@
             <span class="status"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>{{ _("Healthy") }}</span>
         </li>
         <li class="trio-item">
-            <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="{{ _('A mango with dark anthracnose patches') }}" width="800" height="800">
+            <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="{{ _('A mango with dark anthracnose patches') }}" width="600" height="800">
             <span class="status status-alert"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>{{ _("Anthracnose") }}</span>
         </li>
         <li class="trio-item">
-            <img src="{{ url_for('static', filename='samples/sample_stem_rot.jpg') }}" alt="{{ _('A ripe mango rotting from the stem end') }}" width="800" height="1066">
+            <img src="{{ url_for('static', filename='samples/sample_stem_rot.jpg') }}" alt="{{ _('A ripe mango rotting from the stem end') }}" width="600" height="800">
             <span class="status status-alert"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>{{ _("Stem-end rot") }}</span>
         </li>
     </ul>
@@ -51,7 +51,7 @@
                 <p class="step-desc">{{ _("Fill the frame with one mango. Use a plain background and even light, with the stem end showing.") }}</p>
             </div>
             <figure class="step-visual frame">
-                <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="{{ _('Example photo: one mango filling the frame on a plain background') }}" width="800" height="800" loading="lazy">
+                <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="{{ _('Example photo: one mango filling the frame') }}" width="600" height="800" loading="lazy">
                 <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span>
                 <span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
             </figure>
@@ -84,7 +84,7 @@
                 <p class="step-desc">{{ _("You get the name of the disease, what to do with the fruit, and the bad spots marked on your photo.") }}</p>
             </div>
             <figure class="step-visual answer-demo">
-                <img src="{{ url_for('static', filename='samples/sample_anthracnose_marked.jpg') }}" alt="{{ _('The example mango with the diseased area boxed in red') }}" width="800" height="800" loading="lazy">
+                <img src="{{ url_for('static', filename='samples/sample_anthracnose_marked.jpg') }}" alt="{{ _('The example mango with the diseased area boxed in red') }}" width="600" height="800" loading="lazy">
                 <div class="answer-body">
                     <p class="status status-alert">
                         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 3 2 20h20z"/></svg>
@@ -114,14 +114,14 @@
             </div>
         </li>
         <li class="answer-row">
-            <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="" width="800" height="800" loading="lazy">
+            <img src="{{ url_for('static', filename='samples/sample_anthracnose.jpg') }}" alt="" width="600" height="800" loading="lazy">
             <div class="answer-row-text">
                 <p class="answer-row-name">{{ _("Anthracnose") }} <span class="answer-row-order">{{ _("Quarantine.") }}</span></p>
                 <p class="answer-row-action">{{ _("Quarantine fruit. Apply postharvest hot water treatment (48 °C for 20 min) or prochloraz dip.") }}</p>
             </div>
         </li>
         <li class="answer-row">
-            <img src="{{ url_for('static', filename='samples/sample_stem_rot.jpg') }}" alt="" width="800" height="1066" loading="lazy">
+            <img src="{{ url_for('static', filename='samples/sample_stem_rot.jpg') }}" alt="" width="600" height="800" loading="lazy">
             <div class="answer-row-text">
                 <p class="answer-row-name">{{ _("Stem-end rot") }} <span class="answer-row-order">{{ _("Trim the stem.") }}</span></p>
                 <p class="answer-row-action">{{ _("Trim stem flush with fruit shoulder. Separate from export crates and store in dry ventilation (below 13 °C).") }}</p>
