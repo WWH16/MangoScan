@@ -91,13 +91,18 @@ def index():
     # Supabase falls back to the site root when an email link's redirect is not allowed
     if request.args.get("token_hash"):
         return redirect(url_for("accounts.confirm", **request.args))
+    return render_template("landing.html")
+
+
+@app.route("/scan")
+def scan():
     return render_template("upload.html")
 
 
 @app.route("/predict", methods=["GET", "POST"])
 def predict():
     if request.method == "GET":
-        return redirect(url_for("index"))
+        return redirect(url_for("scan"))
     if not ratelimit.allow("scan", *SCAN_LIMIT):
         return error_response("You have scanned a lot in a short time. Wait a few minutes, then try again.", 429)
 
@@ -213,7 +218,7 @@ def offline():
 
 @app.errorhandler(405)
 def method_not_allowed(error):
-    return redirect(url_for("index"))
+    return redirect(url_for("scan"))
 
 
 @app.errorhandler(413)

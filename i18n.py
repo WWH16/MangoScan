@@ -19,13 +19,67 @@ COOKIE = "lang"
 FIL = {
     # ---------- Header and footer ----------
     "Skip to content": "Lumaktaw sa nilalaman",
-    "MangoScan, start a new scan": "MangoScan, magsimula ng bagong scan",
+    "MangoScan home": "Home ng MangoScan",
     "Mango disease checker": "Pantingin ng sakit ng mangga",
     "My scans": "Aking mga scan",
     "Log in": "Mag-log in",
     "Language": "Wika",
     "MangoScan · thesis prototype · HSV, GLCM and Hu features with an RBF SVM":
         "MangoScan · prototype para sa thesis · HSV, GLCM at Hu features gamit ang RBF SVM",
+
+    # ---------- Landing page ----------
+    "About MangoScan": "Tungkol sa MangoScan",
+    "Check a mango for disease with one photo": "Suriin ang sakit ng mangga sa isang litrato",
+    "Check a mango for disease with one photo.": "Suriin ang sakit ng mangga sa isang litrato.",
+    "MangoScan tells you if the fruit is <strong>healthy</strong>, has <strong>anthracnose</strong> or has <strong>stem-end rot</strong>, and what to do with it.":
+        "Sasabihin ng MangoScan kung ang bunga ay <strong>malusog</strong>, may <strong>anthracnose</strong>, o may <strong>stem-end rot</strong>, at kung ano ang gagawin dito.",
+    "Free. No account needed.": "Libre. Hindi kailangan ng account.",
+    "Example mangoes": "Mga halimbawang mangga",
+    "A healthy green mango": "Isang malusog na berdeng mangga",
+    "A mango with dark anthracnose patches": "Isang mangga na may maitim na mantsa ng anthracnose",
+    "A ripe mango rotting from the stem end": "Isang hinog na manggang nabubulok mula sa tangkay",
+    "Anthracnose": "Anthracnose",
+    "Stem-end rot": "Stem-end rot",
+    "How it works": "Paano ito gumagana",
+    "Take a photo": "Kumuha ng litrato",
+    "Fill the frame with one mango. Use a plain background and even light, with the stem end showing.":
+        "Punuin ng isang mangga ang litrato. Gumamit ng payak na background at pantay na liwanag, at dapat kita ang tangkay.",
+    "Example photo: one mango filling the frame on a plain background":
+        "Halimbawang litrato: isang manggang puno sa litrato, payak ang background",
+    "MangoScan checks the peel": "Sinusuri ng MangoScan ang balat",
+    "It looks at the colour, texture and shape of the skin. This takes a few seconds.":
+        "Tinitingnan nito ang kulay, tekstura at hugis ng balat. Ilang segundo lang ito.",
+    "If the photo is too dark, too blurry or has no mango in it, MangoScan asks for a new photo instead of guessing.":
+        "Kung masyadong madilim, malabo, o walang mangga ang litrato, hihingi ang MangoScan ng bagong litrato sa halip na manghula.",
+    "Find the mango in the photo": "Hanapin ang mangga sa litrato",
+    "Look at the colour": "Tingnan ang kulay",
+    "Look at the texture and shape": "Tingnan ang tekstura at hugis",
+    "Pick the answer": "Piliin ang sagot",
+    "Read the answer": "Basahin ang sagot",
+    "You get the name of the disease, what to do with the fruit, and the bad spots marked on your photo.":
+        "Makikita mo ang pangalan ng sakit, ang dapat gawin sa bunga, at ang mga sirang bahagi na may marka sa iyong litrato.",
+    "The example mango with the diseased area boxed in red": "Ang halimbawang mangga na may pulang kahon sa bahaging may sakit",
+    "Real result from MangoScan for the example mango.": "Tunay na resulta ng MangoScan para sa halimbawang mangga.",
+    "The three answers": "Ang tatlong sagot",
+    "Every scan ends with one of these, and what to do next.":
+        "Bawat scan ay nagtatapos sa isa sa mga ito, kasama ang susunod na gagawin.",
+    "Good to know": "Mabuting malaman",
+    "No account needed": "Hindi kailangan ng account",
+    "Anyone can scan. Nothing is kept unless you log in.":
+        "Kahit sino ay puwedeng mag-scan. Walang itinatago maliban kung naka-log in ka.",
+    "Save your scans": "I-save ang iyong mga scan",
+    "With a free account, every scan and its photos are kept under My scans.":
+        "Kapag may libreng account, nakatago ang bawat scan at ang mga litrato nito sa Aking mga scan.",
+    "Open My scans": "Buksan ang Aking mga scan",
+    "English or Filipino": "English o Filipino",
+    "Choose your language in Settings.": "Piliin ang iyong wika sa Settings.",
+    "Open Settings": "Buksan ang Settings",
+    "Add it to your phone": "Ilagay sa iyong phone",
+    "Install MangoScan on your home screen and open it like an app. Checking a photo still needs the internet.":
+        "I-install ang MangoScan sa home screen at buksan ito na parang app. Kailangan pa rin ng internet para masuri ang litrato.",
+    "How to install": "Paano i-install",
+    "Have a mango with you?": "May mangga ka ba riyan?",
+    "Take its photo now. It takes less than a minute.": "Kunan na ito ng litrato. Wala pang isang minuto ito.",
 
     # ---------- Scan screen ----------
     "Scan a mango": "I-scan ang mangga",

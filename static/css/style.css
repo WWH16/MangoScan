@@ -201,6 +201,7 @@ img { max-width: 100%; display: block; }
     font-size: 0.8125rem;
 }
 .site-foot p { margin: 0; }
+.site-foot .foot-link { margin-top: var(--space-1); font-size: 0.8125rem; color: var(--muted-foreground); }
 
 /* ---------- Buttons ---------- */
 
@@ -913,6 +914,302 @@ img { max-width: 100%; display: block; }
 .segment[aria-current="true"] { background: var(--background); color: var(--foreground); box-shadow: var(--shadow-sm); }
 .install-note { margin: 0; font-size: 0.875rem; line-height: 1.55; color: var(--muted-foreground); }
 #btn-install { align-self: flex-start; }
+#install { scroll-margin-top: 84px; }
+
+/* ---------- Landing page ---------- */
+
+.screen-landing .page { display: flex; flex-direction: column; gap: var(--space-8); }
+
+.intro { display: grid; gap: var(--space-6); }
+.intro-text { display: flex; flex-direction: column; gap: var(--space-4); }
+.intro-headline { font-size: clamp(2rem, 8.5vw, 3.25rem); line-height: 1.08; letter-spacing: -0.035em; max-width: 16ch; }
+.intro .lede { margin: 0; font-size: 1.0625rem; }
+.intro-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2); }
+.landing-cta { width: 100%; }
+.intro-note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+}
+.intro-note .icon { color: var(--success); stroke-width: 2.5; }
+
+/* Three real mangoes, one per answer */
+.trio {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.trio-item { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
+.trio-item img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--muted);
+}
+.trio .status { max-width: 100%; padding: 2px 8px; font-size: 0.75rem; white-space: nowrap; }
+/* Narrow phones: the word alone keeps each pill on one line */
+@media (max-width: 399px) { .trio .status .icon { display: none; } }
+.trio .status .icon { width: 12px; height: 12px; }
+
+/* Section heads */
+.section-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 6vw, 1.875rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+}
+.section-desc { margin: var(--space-2) 0 0; max-width: 52ch; color: var(--muted-foreground); line-height: 1.6; }
+
+/* Walk-through: a numbered line joins the three steps */
+.walk { display: flex; flex-direction: column; gap: var(--space-5); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: walk; }
+.step {
+    position: relative;
+    display: grid;
+    gap: var(--space-4);
+    padding: 0 0 var(--space-7) 52px;
+    counter-increment: walk;
+}
+.step:last-child { padding-bottom: 0; }
+.step::before {
+    content: counter(walk);
+    position: absolute;
+    left: 0;
+    top: -2px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 1rem;
+    font-weight: 600;
+}
+.step::after {
+    content: "";
+    position: absolute;
+    left: 17.5px;
+    top: 42px;
+    bottom: 6px;
+    width: 1px;
+    background: var(--border);
+}
+.step:last-child::after { display: none; }
+.step-text { display: grid; gap: var(--space-2); }
+.step-title { margin: 0; font-size: 1.25rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.015em; }
+.step-desc { margin: 0; max-width: 52ch; color: var(--muted-foreground); line-height: 1.6; }
+.step-aside {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+    max-width: 52ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--foreground);
+}
+.step-aside .icon { margin-top: 3px; color: var(--muted-foreground); }
+.step-visual { margin: 0; min-width: 0; max-width: 420px; }
+
+/* Step 1: the photo inside viewfinder corners */
+.frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--muted);
+}
+.frame img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
+.frame .corner { border-color: #fff; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5)); }
+.frame .corner.tl, .frame .corner.tr { top: 8%; }
+.frame .corner.bl, .frame .corner.br { bottom: 8%; }
+.frame .corner.tl, .frame .corner.bl { left: 8%; }
+.frame .corner.tr, .frame .corner.br { right: 8%; }
+
+/* Step 2: the checking card, as the app shows it */
+.check-demo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+}
+/* One pass of the scan line, top to bottom, while the list ticks (4 steps x 700ms) */
+.demo-photo::after { opacity: 0; animation: none; }
+.check-demo.is-playing .demo-photo::after {
+    opacity: 1;
+    animation: sweep-once 2.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+@keyframes sweep-once {
+    0% { top: 0; opacity: 1; }
+    90% { top: calc(100% - 2px); opacity: 1; }
+    100% { top: calc(100% - 2px); opacity: 0; }
+}
+
+/* Step 3: the real result */
+.answer-demo {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+}
+.answer-demo img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-bottom: 1px solid var(--border); }
+.answer-body { padding: var(--space-5) var(--space-5) var(--space-4); }
+.answer-word {
+    margin: var(--space-3) 0 0;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+.answer-demo .imperative { margin-top: var(--space-2); font-size: 1.25rem; }
+.answer-cap {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--border);
+    background: var(--muted);
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+}
+
+/* The three answers */
+.answer-list {
+    margin: var(--space-5) 0 0;
+    padding: 0 var(--space-4);
+    list-style: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+.answer-row {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+}
+.answer-row + .answer-row { border-top: 1px solid var(--border); }
+.answer-row img { width: 72px; height: 72px; min-width: 0; object-fit: cover; border-radius: var(--radius); background: var(--muted); }
+.answer-row-text { display: grid; gap: var(--space-1); min-width: 0; }
+.answer-row-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-2);
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+.answer-row-order { font-size: 1rem; font-weight: 500; color: var(--muted-foreground); }
+.answer-row-action { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--muted-foreground); }
+
+/* Good to know: a plain definition list, not a card grid */
+.fact-list { margin: var(--space-5) 0 0; border-top: 1px solid var(--border); }
+.fact {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--border);
+}
+.fact dt { display: flex; align-items: center; gap: var(--space-3); font-size: 1.0625rem; font-weight: 600; }
+.fact dt .icon { width: 20px; height: 20px; color: var(--muted-foreground); }
+.fact dd { margin: 0 0 0 32px; max-width: 56ch; color: var(--muted-foreground); line-height: 1.6; }
+.fact dd .link-btn { display: flex; width: fit-content; font-size: 0.9375rem; }
+
+/* Closing call */
+.closing {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--muted);
+}
+.closing .section-desc { margin: calc(var(--space-2) * -1) 0 0; }
+.screen-landing .more { margin-top: calc(var(--space-6) * -1); }
+
+@media (min-width: 600px) {
+    .landing-cta { width: auto; align-self: flex-start; padding: 0 var(--space-6); }
+    .intro-actions { flex-direction: row; align-items: center; gap: var(--space-5); }
+    .closing { align-items: flex-start; padding: var(--space-7); }
+}
+
+@media (min-width: 900px) {
+    .screen-landing .page { gap: 96px; }
+    .intro {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: var(--space-7);
+        align-items: center;
+    }
+    /* A tall photo on the left, two square ones stacked beside it */
+    .trio { grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr 1fr; gap: var(--space-4); }
+    .trio-item { position: relative; }
+    .trio-item:first-child { grid-row: 1 / 3; }
+    .trio-item img { height: 100%; aspect-ratio: auto; }
+    .trio-item:not(:first-child) img { aspect-ratio: 1; }
+    .trio .status {
+        position: absolute;
+        left: var(--space-3);
+        bottom: var(--space-3);
+        padding: 4px 10px;
+        font-size: 0.8125rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .trio .status .icon { width: 14px; height: 14px; }
+
+    .walk { gap: var(--space-7); }
+    .step {
+        grid-template-columns: minmax(0, 30rem) minmax(0, 440px);
+        justify-content: space-between;
+        column-gap: var(--space-7);
+        align-items: start;
+        padding-left: 64px;
+        padding-bottom: var(--space-8);
+    }
+    /* The number travels with the text, which stays beside the picture while it scrolls */
+    .step::before { display: none; }
+    .step-text { position: sticky; top: 100px; }
+    .step-text::before {
+        content: counter(walk);
+        position: absolute;
+        left: -64px;
+        top: -2px;
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .step::after { display: none; }
+    .step-title { font-size: 1.625rem; }
+    .step-desc, .step-aside { font-size: 1.125rem; }
+    .step-aside { font-size: 1rem; }
+    .step-visual { justify-self: end; width: 100%; }
+
+    .answers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); column-gap: var(--space-7); align-items: start; }
+    .answer-list { margin-top: 0; }
+    .facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); column-gap: var(--space-7); align-items: start; }
+    .fact-list { margin-top: 0; }
+}
 
 /* ---------- Motion ---------- */
 

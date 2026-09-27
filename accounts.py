@@ -140,7 +140,7 @@ def _too_many():
     return not ratelimit.allow("auth", *AUTH_LIMIT)
 
 
-def _safe_next(default="index"):
+def _safe_next(default="scan"):
     nxt = request.values.get("next", "")
     # Only same-site paths, never another host
     if nxt.startswith("/") and not nxt.startswith("//") and "\\" not in nxt:
@@ -325,7 +325,7 @@ def confirm():
         if kind == "recovery":
             return redirect(url_for("accounts.reset_password"))
         flash(t("Your email is confirmed. Your scans will now be saved."))
-        return redirect(url_for("index"))
+        return redirect(url_for("scan"))
 
     token_hash = request.args.get("token_hash", "")
     kind = request.args.get("type", "")
@@ -345,7 +345,7 @@ def confirm():
     if kind == "recovery":
         return redirect(url_for("accounts.reset_password"))
     flash(t("Your email is confirmed. Your scans will now be saved."))
-    return redirect(url_for("index"))
+    return redirect(url_for("scan"))
 
 
 @bp.route("/reset-password", methods=["GET", "POST"])
@@ -364,7 +364,7 @@ def reset_password():
                 errors["form"] = _auth_message(exc)
             else:
                 flash(t("Your new password is saved."))
-                return redirect(url_for("index"))
+                return redirect(url_for("scan"))
     return render_template("reset_password.html", errors=errors)
 
 

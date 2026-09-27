@@ -2,7 +2,7 @@
   "name": "MangoScan",
   "short_name": "MangoScan",
   "description": "Check a mango for anthracnose and stem-end rot from one photo.",
-  "start_url": "/",
+  "start_url": "/scan",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
