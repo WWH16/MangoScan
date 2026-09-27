@@ -288,6 +288,15 @@ img { max-width: 100%; display: block; }
 }
 .nav-link:hover { background: var(--secondary); }
 .bar-actions { display: flex; align-items: center; gap: var(--space-2); }
+.nav-link { white-space: nowrap; }
+/* 360px phones: the header holds the name, the account link and two icon buttons */
+@media (max-width: 419px) {
+    .site-bar { gap: var(--space-2); }
+    .bar-actions { gap: 0; }
+    .nav-link { padding: 0 var(--space-3); margin-right: var(--space-1); }
+    /* Signed in, "My scans" needs the room (longest in Filipino); the logo stays and the link keeps its label */
+    .is-signed-in .wordmark span { display: none; }
+}
 .screen-auth .account-nav,
 .screen-scans .account-nav { display: none; }
 
@@ -503,6 +512,54 @@ img { max-width: 100%; display: block; }
 .toast.is-leaving { animation: toast-out 180ms ease-in forwards; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(-8px) scale(0.98); } }
+
+/* Screen guides: the page dims, one real control stays lit, a card explains it.
+   The card docks at the bottom (thumb reach) and moves to the top when it would
+   cover the lit control. */
+.guide { position: fixed; inset: 0; z-index: 50; }
+.guide-block { position: absolute; inset: 0; }
+.guide-ring {
+    position: fixed;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 0 3px #fff, 0 0 0 200vmax rgb(9 9 11 / 0.7);
+    pointer-events: none;
+    transition: left 280ms var(--ease-out), top 280ms var(--ease-out), width 280ms var(--ease-out), height 280ms var(--ease-out);
+}
+/* No element to point at: the whole page dims */
+.guide-ring.is-empty { left: 50% !important; top: 50% !important; width: 0 !important; height: 0 !important; box-shadow: 0 0 0 200vmax rgb(9 9 11 / 0.7); }
+.guide-card {
+    position: fixed;
+    left: 50%;
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: min(440px, calc(100% - 32px));
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+    transform: translateX(-50%);
+    animation: guide-in 260ms var(--ease-out);
+}
+.guide.is-top .guide-card { bottom: auto; top: calc(env(safe-area-inset-top) + 72px); animation-name: guide-in-top; }
+@keyframes guide-in { from { opacity: 0; transform: translate(-50%, 12px); } }
+@keyframes guide-in-top { from { opacity: 0; transform: translate(-50%, -12px); } }
+.guide-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 44px; }
+.guide-count { margin: 0; color: var(--muted-foreground); font-size: 0.875rem; font-weight: 500; }
+.guide-skip { margin-left: auto; color: var(--muted-foreground); }
+.guide-progress { display: flex; gap: 4px; margin-top: calc(var(--space-2) * -1); }
+.guide-progress:empty { display: none; }
+.guide-progress span { flex: 1; height: 4px; border-radius: 2px; background: var(--secondary-hover); transition: background-color 200ms; }
+.guide-progress span.is-on { background: var(--primary); }
+.guide-body { display: grid; gap: var(--space-1); }
+.guide-title { margin: 0; font-size: 1.1875rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; text-wrap: balance; }
+.guide-text { margin: 0; font-size: 1rem; line-height: 1.55; text-wrap: pretty; }
+.guide-actions { display: flex; gap: var(--space-2); margin-top: var(--space-1); }
+.guide-actions .btn { flex: 1; padding: 0 var(--space-4); }
+.guide-open { overscroll-behavior: none; }
+
 @media (min-width: 600px) {
     .toaster { top: auto; left: auto; right: var(--space-5); bottom: max(var(--space-5), env(safe-area-inset-bottom)); width: 380px; }
     @keyframes toast-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
@@ -934,6 +991,7 @@ img { max-width: 100%; display: block; }
     transition: background-color 150ms, color 150ms;
 }
 .icon-link .icon { width: 20px; height: 20px; }
+button.icon-link { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .icon-link:hover,
 .icon-link.is-current { background: var(--secondary); color: var(--foreground); }
 
@@ -979,10 +1037,13 @@ img { max-width: 100%; display: block; }
     transition: background-color 150ms, color 150ms, box-shadow 150ms;
 }
 .segment:hover { color: var(--foreground); }
-.segment[aria-current="true"] { background: var(--background); color: var(--foreground); box-shadow: var(--shadow-sm); }
+button.segment { width: 100%; border: 0; background: none; font-family: inherit; cursor: pointer; }
+.segment[aria-current="true"],
+.segment[aria-pressed="true"] { background: var(--background); color: var(--foreground); box-shadow: var(--shadow-sm); }
 .install-note { margin: 0; font-size: 0.875rem; line-height: 1.55; color: var(--muted-foreground); }
 #btn-install { align-self: flex-start; }
 #install { scroll-margin-top: 84px; }
+@media (min-width: 600px) { #btn-guides-reset { align-self: flex-start; } }
 
 /* ---------- Landing page ---------- */
 

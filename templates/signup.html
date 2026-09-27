@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% from "_forms.html" import form_error, field, submit, reveal_script %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("signup", [
+    {"target": ".auth-form", "title": _("Three things to fill in"),
+     "text": _("Your name, your email, and a password of at least 8 characters.")},
+    {"target": ".auth-form .btn", "title": _("Then check your email"),
+     "text": _("After you tap Create account, open the link we email you. Your account is ready once you do.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Create an account") }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}

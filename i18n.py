@@ -378,6 +378,126 @@ FIL = {
     "Not available yet.": "Hindi pa available.",
     "Something went wrong.": "May nagkaproblema.",
     "The page or scan you asked for does not exist.": "Walang ganitong pahina o scan.",
+
+    # ---------- Screen guides ----------
+    "Show how this screen works": "Ipakita kung paano gamitin ang screen na ito",
+    "Skip guide": "Laktawan",
+    "Back": "Bumalik",
+    "Next": "Susunod",
+    "Got it": "Sige, gets ko",
+    "Step {n} of {total}": "Hakbang {n} sa {total}",
+    "Help on every screen": "May tulong sa bawat screen",
+    "Tap the question mark at the top to see the guide for any screen again.":
+        "Pindutin ang tandang pananong sa itaas para makita ulit ang gabay ng kahit anong screen.",
+    # Landing
+    "Start here": "Dito magsimula",
+    "Tap Scan a mango to check a fruit. It is free and you do not need an account.":
+        "Pindutin ang I-scan ang mangga para suriin ang isang bunga. Libre ito at hindi kailangan ng account.",
+    "One of three answers": "Isa sa tatlong sagot",
+    "MangoScan tells you if a mango is healthy, has anthracnose or has stem-end rot, and what to do with it.":
+        "Sasabihin ng MangoScan kung ang mangga ay malusog, may anthracnose o may stem-end rot, at kung ano ang gagawin dito.",
+    "Language and app": "Wika at app",
+    "Tap the gear to switch to Filipino or put MangoScan on your home screen.":
+        "Pindutin ang gear para lumipat sa Filipino o ilagay ang MangoScan sa home screen mo.",
+    # Scan
+    "Keep the mango inside the corners": "Panatilihin ang mangga sa loob ng mga sulok",
+    "Hold the phone still so the whole fruit fits inside the four corners.":
+        "Hawakan nang steady ang phone para magkasya ang buong bunga sa loob ng apat na sulok.",
+    "Tap once. MangoScan takes the photo and checks it right away.":
+        "Pindutin nang isang beses. Kukunan ito ng MangoScan at susuriin agad.",
+    "Tap here to open your camera. Take one mango so it fills the photo.":
+        "Pindutin dito para buksan ang camera. Kunan ang isang mangga nang punô ang litrato.",
+    "For a clear answer": "Para sa malinaw na sagot",
+    "Use a plain background and even light, with the stem end showing. If the photo is blurry or too dark, MangoScan asks for a new one.":
+        "Gumamit ng simpleng background at pantay na liwanag, at ipakita ang dulo ng tangkay. Kung malabo o masyadong madilim ang litrato, hihingi ang MangoScan ng bago.",
+    "Already have a photo?": "May litrato ka na?",
+    "Pick a mango photo from your phone's gallery instead.":
+        "Pumili na lang ng litrato ng mangga mula sa gallery ng phone mo.",
+    "Live camera": "Live camera",
+    "Aim at the mango and capture it here, without leaving the page.":
+        "Itutok sa mangga at kunan dito mismo, nang hindi umaalis sa pahina.",
+    # Result
+    "The answer": "Ang sagot",
+    "This is what MangoScan found. The lines below it say what to do with the fruit.":
+        "Ito ang nakita ng MangoScan. Sinasabi ng mga linya sa ibaba kung ano ang gagawin sa bunga.",
+    "Your photo, marked": "Ang litrato mo, may marka",
+    "The green frame shows the fruit MangoScan checked. Tap Original to see your photo without marks.":
+        "Ipinapakita ng berdeng frame ang bungang sinuri ng MangoScan. Pindutin ang Orihinal para makita ang litrato nang walang marka.",
+    "The boxes show where MangoScan found bad spots. Tap Original to see your photo without marks.":
+        "Ipinapakita ng mga kahon kung saan may nakitang sira ang MangoScan. Pindutin ang Orihinal para makita ang litrato nang walang marka.",
+    "Grade and coverage": "Grado at lawak ng sira",
+    "Grade A is good to sell. Grade C needs sorting or treatment. Coverage is about how much of the peel looks affected.":
+        "Ang Grado A ay puwedeng ibenta. Ang Grado C ay kailangang ihiwalay o gamutin. Ang lawak ng sira ay tantiya kung gaano karami ng balat ang apektado.",
+    "Saved to My scans": "Naka-save sa Aking mga scan",
+    "Keep your results": "I-save ang iyong mga resulta",
+    "You can open this result again any time from My scans.":
+        "Mabubuksan mo ulit ang resultang ito anumang oras mula sa Aking mga scan.",
+    "Log in or create a free account, and every mango you check is saved.":
+        "Mag-log in o gumawa ng libreng account, at mase-save ang bawat manggang susuriin mo.",
+    "Next mango": "Susunod na mangga",
+    "Tap here to check another fruit.": "Pindutin dito para sumuri ng isa pang bunga.",
+    # My scans
+    "Your saved scans": "Ang iyong mga naka-save na scan",
+    "Newest first. Tap a scan to see its photo and what to do again.":
+        "Pinakabago ang nasa itaas. Pindutin ang isang scan para makita ulit ang litrato at ang dapat gawin.",
+    "Mangoes with a disease are marked, so you can find them quickly.":
+        "May marka ang mga manggang may sakit, para madali mo silang makita.",
+    "Nothing saved yet": "Wala pang naka-save",
+    "Every mango you check while logged in shows up here, with its photo.":
+        "Lalabas dito ang bawat manggang susuriin mo habang naka-log in, kasama ang litrato nito.",
+    "Check a mango": "Sumuri ng mangga",
+    "Start a new scan from here.": "Magsimula ng bagong scan dito.",
+    # Settings
+    "Choose English or Filipino. This phone remembers your choice.":
+        "Pumili ng English o Filipino. Tatandaan ito ng phone na ito.",
+    "Put MangoScan on your phone": "Ilagay ang MangoScan sa phone mo",
+    "Add it to your home screen and it opens like an app, straight to scanning.":
+        "Idagdag ito sa home screen at bubukas ito na parang app, diretso sa pag-scan.",
+    "These guides": "Ang mga gabay na ito",
+    "Turn the guides off here, or show them all again.":
+        "Dito mo mapapatay ang mga gabay, o maipapakita ulit lahat.",
+    "Your data": "Ang iyong data",
+    "You can delete your account, every saved scan and every photo at any time.":
+        "Puwede mong burahin ang iyong account, bawat naka-save na scan at bawat litrato anumang oras.",
+    "Log in or create a free account to keep every result.":
+        "Mag-log in o gumawa ng libreng account para ma-save ang bawat resulta.",
+    "Screen guides": "Mga gabay sa screen",
+    "A short guide shows how each screen works the first time you open it.":
+        "May maikling gabay na nagpapakita kung paano gamitin ang bawat screen sa unang beses mo itong buksan.",
+    "On": "Bukas",
+    "Off": "Sarado",
+    "Show all guides again": "Ipakita ulit lahat ng gabay",
+    "Guides are on. Each screen shows its guide the first time.":
+        "Bukas ang mga gabay. Ipapakita ng bawat screen ang gabay nito sa unang beses.",
+    "Guides are off. Tap the question mark on any screen to see its guide.":
+        "Sarado ang mga gabay. Pindutin ang tandang pananong sa kahit anong screen para makita ang gabay nito.",
+    "Every screen will show its guide again.": "Ipapakita ulit ng bawat screen ang gabay nito.",
+    # Account screens
+    "Use the email and password you signed up with. Tap Show to check what you typed.":
+        "Gamitin ang email at password na ginamit mo sa pag-sign up. Pindutin ang Ipakita para makita ang tinype mo.",
+    "Tap here and we email you a link to make a new one.":
+        "Pindutin dito at magpapadala kami ng link sa email para gumawa ng bago.",
+    "New to MangoScan?": "Bago ka sa MangoScan?",
+    "Create a free account here. You can also scan without one.":
+        "Gumawa ng libreng account dito. Puwede ka ring mag-scan kahit wala nito.",
+    "Three things to fill in": "Tatlong kailangang punan",
+    "Your name, your email, and a password of at least 8 characters.":
+        "Ang pangalan mo, ang email mo, at password na may hindi bababa sa 8 karakter.",
+    "Then check your email": "Pagkatapos, tingnan ang email mo",
+    "After you tap Create account, open the link we email you. Your account is ready once you do.":
+        "Pagkapindot mo ng Gumawa ng account, buksan ang link na ipapadala namin sa email. Handa na ang account mo kapag nagawa mo ito.",
+    "Get a new password": "Kumuha ng bagong password",
+    "Enter the email you signed up with. If the email does not arrive in a few minutes, check your spam folder.":
+        "Ilagay ang email na ginamit mo sa pag-sign up. Kung hindi dumating ang email sa loob ng ilang minuto, tingnan ang spam folder.",
+    "Choose a new password": "Pumili ng bagong password",
+    "Use at least 8 characters. After you save it, you stay logged in.":
+        "Gumamit ng hindi bababa sa 8 karakter. Pagka-save, mananatili kang naka-log in.",
+    "Open your email": "Buksan ang email mo",
+    "Find the email from MangoScan and tap the link in it. It can take a few minutes to arrive.":
+        "Hanapin ang email mula sa MangoScan at pindutin ang link dito. Maaaring abutin ng ilang minuto bago ito dumating.",
+    "No email?": "Walang email?",
+    "Check your spam folder first. Still nothing after a minute? Tap here to send it again.":
+        "Tingnan muna ang spam folder. Wala pa rin pagkalipas ng isang minuto? Pindutin dito para ipadala ulit.",
 }
 
 

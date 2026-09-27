@@ -1,0 +1,10 @@
+{# Screen guides: a few steps, each pointing at a real element on the page by CSS selector.
+   base.html runs them: automatically the first time a screen opens (unless turned off in
+   Settings), and again whenever the ? button in the header is tapped. Steps whose element
+   is not on the page are skipped, so one guide can serve every state of a screen.
+
+   auto=False: only shown when asked for, or by a page script calling MangoGuide.maybe(id).
+   when: a selector that must be visible for this guide to apply (e.g. an open panel). #}
+{% macro guide(id, steps, auto=True, when=None) %}
+<script type="application/json" class="guide-data">{{ {"id": id, "auto": auto, "when": when, "steps": steps} | tojson }}</script>
+{% endmacro %}

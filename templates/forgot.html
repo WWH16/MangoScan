@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% from "_forms.html" import form_error, field, submit, reveal_script %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("forgot", [
+    {"target": ".auth-form", "title": _("Get a new password"),
+     "text": _("Enter the email you signed up with. If the email does not arrive in a few minutes, check your spam folder.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Forgot password?") }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}

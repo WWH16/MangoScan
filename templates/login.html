@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% from "_forms.html" import form_error, field, submit, resend_form, reveal_script with context %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("login", [
+    {"target": ".auth-form", "title": _("Log in"),
+     "text": _("Use the email and password you signed up with. Tap Show to check what you typed.")},
+    {"target": ".minor-actions a[href*='forgot']", "title": _("Forgot your password?"),
+     "text": _("Tap here and we email you a link to make a new one.")},
+    {"target": ".minor-actions a[href*='signup']", "title": _("New to MangoScan?"),
+     "text": _("Create a free account here. You can also scan without one.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Log in") }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}

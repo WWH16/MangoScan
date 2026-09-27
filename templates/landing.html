@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% from "_pipeline.html" import pipeline %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("home", [
+    {"target": ".intro-actions .landing-cta", "title": _("Start here"),
+     "text": _("Tap Scan a mango to check a fruit. It is free and you do not need an account.")},
+    {"target": ".trio", "title": _("One of three answers"),
+     "text": _("MangoScan tells you if a mango is healthy, has anthracnose or has stem-end rot, and what to do with it.")},
+    {"target": "#nav-settings", "title": _("Language and app"),
+     "text": _("Tap the gear to switch to Filipino or put MangoScan on your home screen.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Check a mango for disease with one photo") }}{% endblock %}
 {% block body_class %}screen-landing{% endblock %}

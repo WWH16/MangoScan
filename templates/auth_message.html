@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 {% from "_forms.html" import resend_form with context %}
+{% from "_guide.html" import guide %}
+
+{# Only the "check your email" page has a guide; other messages are one-off #}
+{% block guide %}{% if resend_email %}{{ guide("check-email", [
+    {"target": ".auth .lede", "title": _("Open your email"),
+     "text": _("Find the email from MangoScan and tap the link in it. It can take a few minutes to arrive.")},
+    {"target": ".auth-form .btn", "title": _("No email?"),
+     "text": _("Check your spam folder first. Still nothing after a minute? Tap here to send it again.")}
+]) }}{% endif %}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ title }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}

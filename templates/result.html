@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 {% from "_pipeline.html" import pipeline %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("result", [
+    {"target": "#verdict-word", "title": _("The answer"),
+     "text": _("This is what MangoScan found. The lines below it say what to do with the fruit.")},
+    {"target": ".evidence", "title": _("Your photo, marked"),
+     "text": _("The green frame shows the fruit MangoScan checked. Tap Original to see your photo without marks.") if kind == 'healthy'
+             else _("The boxes show where MangoScan found bad spots. Tap Original to see your photo without marks.")},
+    {"target": ".controls .readouts", "title": _("Grade and coverage"),
+     "text": _("Grade A is good to sell. Grade C needs sorting or treatment. Coverage is about how much of the peel looks affected.")},
+    {"target": ".save-line", "title": _("Saved to My scans") if saved_id else _("Keep your results"),
+     "text": _("You can open this result again any time from My scans.") if saved_id
+             else _("Log in or create a free account, and every mango you check is saved.")},
+    {"target": ".verdict-actions .btn", "title": _("Next mango"),
+     "text": _("Tap here to check another fruit.")}
+]) }}{% endblock %}
 
 {% set label_lower = (prediction or '') | lower %}
 {% if 'healthy' in label_lower %}

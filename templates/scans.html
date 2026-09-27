@@ -1,4 +1,16 @@
 {% extends "base.html" %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("scans", [
+    {"target": ".scan-list", "title": _("Your saved scans"),
+     "text": _("Newest first. Tap a scan to see its photo and what to do again.")},
+    {"target": ".scan-flag", "title": _("Disease found"),
+     "text": _("Mangoes with a disease are marked, so you can find them quickly.")},
+    {"target": ".empty", "title": _("Nothing saved yet"),
+     "text": _("Every mango you check while logged in shows up here, with its photo.")},
+    {"target": ".scans-cta", "title": _("Check a mango"),
+     "text": _("Start a new scan from here.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("My scans") }}{% endblock %}
 {% block body_class %}screen-scans{% endblock %}

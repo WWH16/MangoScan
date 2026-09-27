@@ -1,5 +1,19 @@
 {% extends "base.html" %}
 {% from "_forms.html" import field, reveal_script %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}{{ guide("settings", [
+    {"target": ".segmented", "title": _("Language"),
+     "text": _("Choose English or Filipino. This phone remembers your choice.")},
+    {"target": "#install", "title": _("Put MangoScan on your phone"),
+     "text": _("Add it to your home screen and it opens like an app, straight to scanning.")},
+    {"target": "#guides", "title": _("These guides"),
+     "text": _("Turn the guides off here, or show them all again.")},
+    {"target": ".card-danger", "title": _("Your data"),
+     "text": _("You can delete your account, every saved scan and every photo at any time.")},
+    {"target": "[aria-labelledby='set-account']", "title": _("Save your scans"),
+     "text": _("Log in or create a free account to keep every result.")}
+]) }}{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Settings") }}{% endblock %}
 {% block body_class %}screen-settings{% endblock %}
@@ -46,6 +60,22 @@
         </button>
         <p class="install-note" id="install-done" hidden>{{ _("MangoScan is installed on this phone.") }}</p>
         <p class="install-note" id="install-manual">{{ _("In your browser menu, tap “Add to Home screen” or “Install app”. On iPhone, tap Share, then “Add to Home Screen”.") }}</p>
+    </section>
+
+    <!-- Screen guides: kept on the phone, so the card only appears when the phone can store it -->
+    <section class="card" id="guides" aria-labelledby="set-guides" hidden>
+        <div class="card-head">
+            <h2 class="card-title" id="set-guides">{{ _("Screen guides") }}</h2>
+            <p class="card-desc">{{ _("A short guide shows how each screen works the first time you open it.") }}</p>
+        </div>
+        <div class="segmented" role="group" aria-labelledby="set-guides">
+            <button type="button" class="segment" data-guides="on">{{ _("On") }}</button>
+            <button type="button" class="segment" data-guides="off">{{ _("Off") }}</button>
+        </div>
+        <button type="button" class="btn btn-outline" id="btn-guides-reset">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>{{ _("Show all guides again") }}</span>
+        </button>
     </section>
 
     {% if accounts_enabled %}
@@ -167,6 +197,35 @@
         if (choice.outcome === 'accepted') done.hidden = false; else manual.hidden = false;
     });
     window.addEventListener('appinstalled', () => { installBtn.hidden = true; manual.hidden = true; done.hidden = false; });
+
+    // Screen guides on or off, and a fresh start
+    const guidesCard = document.getElementById('guides');
+    if (MangoGuide.available()) {
+        const T = {{ {
+            "on": _("Guides are on. Each screen shows its guide the first time."),
+            "off": _("Guides are off. Tap the question mark on any screen to see its guide."),
+            "reset": _("Every screen will show its guide again.")
+        } | tojson }};
+        const segments = [...guidesCard.querySelectorAll('[data-guides]')];
+        const paint = () => {
+            const off = MangoGuide.isOff();
+            segments.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.guides === 'off') === off)));
+        };
+        segments.forEach((b) => b.addEventListener('click', () => {
+            const off = b.dataset.guides === 'off';
+            if (off === MangoGuide.isOff()) return;
+            MangoGuide.setOff(off);
+            paint();
+            MangoToast.show(off ? T.off : T.on);
+        }));
+        document.getElementById('btn-guides-reset').addEventListener('click', () => {
+            MangoGuide.reset();
+            paint();
+            MangoToast.show(T.reset);
+        });
+        paint();
+        guidesCard.hidden = false;
+    }
 
     // Delete account dialog
     const dialog = document.getElementById('account-dialog');

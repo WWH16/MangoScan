@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 {% from "_pipeline.html" import pipeline %}
+{% from "_guide.html" import guide %}
+
+{% block guide %}
+{{ guide("camera", [
+    {"target": "#viewfinder", "title": _("Keep the mango inside the corners"),
+     "text": _("Hold the phone still so the whole fruit fits inside the four corners.")},
+    {"target": "#capture-btn", "title": _("Capture and check"),
+     "text": _("Tap once. MangoScan takes the photo and checks it right away.")}
+], auto=False, when="#camera-panel") }}
+{{ guide("scan", [
+    {"target": "#btn-take-photo", "title": _("Take a photo"),
+     "text": _("Tap here to open your camera. Take one mango so it fills the photo.")},
+    {"target": "#upload-panel .tip", "title": _("For a clear answer"),
+     "text": _("Use a plain background and even light, with the stem end showing. If the photo is blurry or too dark, MangoScan asks for a new one.")},
+    {"target": "#btn-choose-file", "title": _("Already have a photo?"),
+     "text": _("Pick a mango photo from your phone's gallery instead.")},
+    {"target": "#btn-live", "title": _("Live camera"),
+     "text": _("Aim at the mango and capture it here, without leaving the page.")}
+]) }}
+{% endblock %}
 
 {% block title %}MangoScan &middot; {{ _("Scan a mango") }}{% endblock %}
 {% block body_class %}screen-scan{% endblock %}
@@ -193,7 +213,7 @@ const T = {{ {
         hideError();
         uploadPanel.hidden = camera;
         cameraPanel.hidden = !camera;
-        if (camera) { startCamera(); captureBtn.focus(); }
+        if (camera) { startCamera(); captureBtn.focus(); MangoGuide.maybe('camera'); }
         else { stopCamera(); $('btn-take-photo').focus(); }
     }
     $('btn-live').addEventListener('click', () => showCamera(true));
