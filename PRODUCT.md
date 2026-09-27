@@ -40,7 +40,7 @@ Anyone can scan without an account. People who sign up (email and password, thro
 
 ## Accessibility & Inclusion
 
-- English and Filipino, switchable on every page.
+- English and Filipino, chosen in Settings (the gear icon in the header) and remembered on the phone.
 - WCAG AA contrast on white; muted text and borders one step darker than shadcn's defaults for sunlight.
 - Minimum 44px touch targets on phones.
 - Keyboard-navigable tabs and dialogs; focus returns to the trigger when a dialog closes.

@@ -156,14 +156,15 @@ Geist for everything, self-hosted (variable, 100–900). Geist Mono only for the
 
 ## Layout
 
-One column on phones, two columns from 900px (content max 1120px, 16px gutters). A sticky 60px header with a bottom border holds the logo tile, the wordmark, a short tagline on desktop, a quiet language link ("Filipino" or "English", naming the other language) and an outline "Log in" or "My scans" button.
+One column on phones, two columns from 900px (content max 1120px, 16px gutters). A sticky 60px header with a bottom border holds the logo tile, the wordmark, a short tagline on desktop, an outline "Log in" or "My scans" button, and a gear button for Settings.
 
 - **Scan:** title, one sentence, then a card with the photo tip, "Take photo" and two links ("Choose a saved photo", "Use live camera"). On desktop an example photo sits on the right in a rounded bordered frame; it is replaced by the farmer's photo once chosen. Under everything, an accordion "How MangoScan checks a photo".
 - **Result:** badge, verdict, order, action, "Scan another mango", then the photo (tabs: Marked up / Original) and a readings card with the grade and a defect-coverage progress bar. "Technical details" is an accordion holding confidence, hue, saturation, photo size and the pipeline.
 - **Account pages:** one centred card, at most 420px wide.
-- **My scans:** a bordered list with thumbnail, verdict, date and order per row, and a red "Disease" pill when the fruit is not healthy. Under the "Scan a mango" button, a hairline row holds "Log out" and a red "Delete my account" link, which opens the same alert dialog as deleting a scan.
+- **My scans:** a bordered list with thumbnail, verdict, date and order per row, and a red "Disease" pill when the fruit is not healthy.
 - **Photo problems:** when a photo has no clear fruit, or is too blurry, too dark or too bright, the scan page returns with a red alert saying what to fix. No result is shown.
-- **Languages:** every string exists in English and Filipino; the header link switches and remembers the choice for a year.
+- **Languages:** every string exists in English and Filipino; Settings switches and remembers the choice for a year.
+- **Settings:** reached from the gear icon, always the last item in the header; language is chosen only here (the header has no language link). One column of cards, max 640px, under the title and a one-line description: Language (segmented English | Filipino), Install MangoScan (the browser's install prompt when offered, otherwise manual steps, or "installed"), and for signed-in users Profile (name field and Save), Password (current then new, and Change password), Log out (a row card with an outline button) and a red-bordered Delete account card whose button opens the alert dialog. Logged-out visitors see an Account card with Log in and Create account instead. Log out and Delete account live only here.
 - **Installable:** a web app manifest and icons (dark tile with the white mango, maskable variant) let farmers add MangoScan to the home screen; offline, pages fall back to a "No internet connection" card with "Try again".
 
 ## Components

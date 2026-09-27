@@ -272,19 +272,6 @@ img { max-width: 100%; display: block; }
 }
 .nav-link:hover { background: var(--secondary); }
 .bar-actions { display: flex; align-items: center; gap: var(--space-2); }
-.lang-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius);
-    color: var(--muted-foreground);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background-color 150ms, color 150ms;
-}
-.lang-link:hover { background: var(--secondary); color: var(--foreground); }
 .screen-auth .account-nav,
 .screen-scans .account-nav { display: none; }
 
@@ -313,6 +300,7 @@ img { max-width: 100%; display: block; }
 /* ---------- Card: shadcn's basic surface ---------- */
 
 .panel,
+.card,
 .hero-result .controls,
 .auth,
 .reading-panel {
@@ -864,6 +852,67 @@ img { max-width: 100%; display: block; }
 }
 .account-actions form { margin: 0; }
 .link-danger { color: var(--destructive); text-decoration-color: var(--destructive-border); }
+
+/* ---------- Settings ---------- */
+
+.icon-link {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    color: var(--muted-foreground);
+    transition: background-color 150ms, color 150ms;
+}
+.icon-link .icon { width: 20px; height: 20px; }
+.icon-link:hover,
+.icon-link.is-current { background: var(--secondary); color: var(--foreground); }
+
+.settings { display: flex; flex-direction: column; gap: var(--space-5); max-width: 640px; width: 100%; margin: 0 auto; }
+.settings-head { display: grid; gap: var(--space-1); }
+.settings-head .lede { margin: 0; }
+.card { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); }
+.card-head { display: grid; gap: var(--space-1); }
+.card-title { margin: 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+.card-desc { margin: 0; font-size: 0.9375rem; line-height: 1.55; color: var(--muted-foreground); }
+.card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.card-actions .btn { flex: 1 1 160px; }
+.card-danger { border-color: var(--destructive-border); }
+.card-danger .card-title { color: #b91c1c; }
+@media (min-width: 600px) {
+    .card-actions .btn { flex: 0 0 auto; }
+    .card-row { flex-direction: row; align-items: center; justify-content: space-between; }
+    .card-row .card-head { flex: 1; }
+}
+.card-row form { margin: 0; }
+.card-row > .btn,
+.card-row form .btn { width: 100%; }
+@media (min-width: 600px) { .card-row > .btn, .card-row form .btn { width: auto; } }
+
+/* Segmented control: two languages, the current one raised */
+.segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius);
+    background: var(--muted);
+}
+.segment {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    border-radius: var(--radius-sm);
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 150ms, color 150ms, box-shadow 150ms;
+}
+.segment:hover { color: var(--foreground); }
+.segment[aria-current="true"] { background: var(--background); color: var(--foreground); box-shadow: var(--shadow-sm); }
+.install-note { margin: 0; font-size: 0.875rem; line-height: 1.55; color: var(--muted-foreground); }
+#btn-install { align-self: flex-start; }
 
 /* ---------- Motion ---------- */
 

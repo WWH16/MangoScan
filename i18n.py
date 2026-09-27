@@ -177,6 +177,52 @@ FIL = {
         "Permanenteng mabubura ang iyong account, lahat ng naka-save na scan at ang mga litrato nito. Hindi na ito maibabalik.",
     "Delete account": "Burahin ang account",
 
+    # ---------- Settings ----------
+    "Settings": "Settings",
+    "Language, app install and your account.": "Wika, pag-install ng app at ang iyong account.",
+    "Choose the language MangoScan uses on this phone.": "Piliin ang wikang gagamitin ng MangoScan sa phone na ito.",
+    "Install MangoScan": "I-install ang MangoScan",
+    "Add MangoScan to your home screen so it opens like an app.":
+        "Idagdag ang MangoScan sa home screen para bumukas ito na parang app.",
+    "Add to home screen": "Idagdag sa home screen",
+    "MangoScan is installed on this phone.": "Naka-install na ang MangoScan sa phone na ito.",
+    "In your browser menu, tap “Add to Home screen” or “Install app”. On iPhone, tap Share, then “Add to Home Screen”.":
+        "Sa menu ng browser, i-tap ang “Add to Home screen” o “Install app”. Sa iPhone, i-tap ang Share, saka “Add to Home Screen”.",
+    "Profile": "Profile",
+    "Signed in as {email}.": "Naka-log in bilang {email}.",
+    "Save name": "I-save ang pangalan",
+    "Enter your current password, then the new one.": "Ilagay ang kasalukuyang password, saka ang bago.",
+    "Current password": "Kasalukuyang password",
+    "Change password": "Palitan ang password",
+    "Log out of MangoScan on this phone.": "Mag-log out sa MangoScan sa phone na ito.",
+    "Permanently delete your account, all saved scans and their photos.":
+        "Permanenteng burahin ang iyong account, lahat ng naka-save na scan at ang mga litrato nito.",
+    "Account": "Account",
+    "Log in to save your scans and find them again on any phone. Scanning works without an account.":
+        "Mag-log in para ma-save ang iyong mga scan at makita ulit sa kahit anong phone. Puwedeng mag-scan kahit walang account.",
+    "Use 100 characters or fewer.": "Gumamit ng hindi hihigit sa 100 karakter.",
+    "Your name is saved.": "Naka-save na ang iyong pangalan.",
+    "Enter your current password.": "Ilagay ang iyong kasalukuyang password.",
+    "That password is not right.": "Mali ang password na iyan.",
+
+    "Preferences": "Mga kagustuhan",
+    "Install": "I-install",
+    "Change the password you log in with.": "Palitan ang password na ginagamit mo sa pag-log in.",
+    "Change": "Palitan",
+    "Save your scans": "I-save ang iyong mga scan",
+    "Danger zone": "Mapanganib na bahagi",
+
+    "General": "Pangkalahatan",
+    "saved scan": "naka-save na scan",
+    "saved scans": "naka-save na scan",
+    "Install app": "I-install ang app",
+    "Browser menu → “Add to Home screen”": "Menu ng browser → “Add to Home screen”",
+    "Installed": "Naka-install",
+    "Name": "Pangalan",
+    "Log in or create an account": "Mag-log in o gumawa ng account",
+    "Save your scans and see them on any phone.": "I-save ang iyong mga scan at makita sa kahit anong phone.",
+    "Deletes your account, all saved scans and their photos.": "Buburahin ang iyong account, lahat ng naka-save na scan at ang mga litrato nito.",
+
     # ---------- Offline ----------
     "No connection": "Walang koneksyon",
     "No internet connection.": "Walang koneksyon sa internet.",

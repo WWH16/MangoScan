@@ -359,15 +359,103 @@ def reset_password():
             errors["password"] = t("Use at least {n} characters.", n=MIN_PASSWORD)
         else:
             try:
-                sb = client()
-                sb.auth.set_session(g.user["at"], g.user["rt"])
-                sb.auth.update_user({"password": password})
+                _session_client().auth.update_user({"password": password})
             except Exception as exc:
                 errors["form"] = _auth_message(exc)
             else:
                 flash(t("Your new password is saved."))
                 return redirect(url_for("index"))
     return render_template("reset_password.html", errors=errors)
+
+
+def _session_client():
+    """A client holding the signed-in user's session, for calls that update the user.
+
+    set_session may refresh the tokens, and Supabase rotates refresh tokens, so
+    the cookie is updated with whatever session the client ends up holding.
+    """
+    sb = client()
+    res = sb.auth.set_session(g.user["at"], g.user["rt"])
+    if res and res.session:
+        _store_session(res.session, res.user or res.session.user)
+        g.user = session["auth"]
+    return sb
+
+
+# ---------- Settings ----------
+
+def _settings_page(errors=None, name=None, status=200):
+    return render_template(
+        "settings.html",
+        errors=errors or {},
+        form={"name": name if name is not None else (g.user or {}).get("name", "")},
+    ), status
+
+
+@bp.route("/settings")
+def settings():
+    return _settings_page()
+
+
+@bp.route("/settings/profile", methods=["POST"])
+@login_required
+def settings_profile():
+    _check_csrf()
+    name = request.form.get("name", "").strip()
+    errors = {}
+    if not name:
+        errors["name"] = t("Enter your name.")
+    elif len(name) > 100:
+        errors["name"] = t("Use 100 characters or fewer.")
+    if not errors:
+        try:
+            sb = _session_client()
+            res = sb.auth.update_user({"data": {"full_name": name}})
+            current = sb.auth.get_session()
+            if current:
+                _store_session(current, res.user if res else None)
+            else:
+                session["auth"]["name"] = name
+                session.modified = True
+        except Exception as exc:
+            errors["form_profile"] = _auth_message(exc)
+        else:
+            flash(t("Your name is saved."))
+            return redirect(url_for("accounts.settings"))
+    return _settings_page(errors, name, 400)
+
+
+@bp.route("/settings/password", methods=["POST"])
+@login_required
+def settings_password():
+    _check_csrf()
+    errors = {}
+    if _too_many():
+        errors["form_password"] = t("Too many tries. Wait a few minutes, then try again.")
+        return _settings_page(errors, status=429)
+    current = request.form.get("current_password", "")
+    new = request.form.get("new_password", "")
+    if not current:
+        errors["current_password"] = t("Enter your current password.")
+    if len(new) < MIN_PASSWORD:
+        errors["new_password"] = t("Use at least {n} characters.", n=MIN_PASSWORD)
+    if not errors:
+        try:
+            # Proving the current password first stops someone at an unlocked phone from changing it
+            sb = client()
+            res = sb.auth.sign_in_with_password({"email": g.user["email"], "password": current})
+        except Exception:
+            errors["current_password"] = t("That password is not right.")
+        else:
+            try:
+                sb.auth.update_user({"password": new})
+                _store_session(sb.auth.get_session() or res.session, res.user)
+            except Exception as exc:
+                errors["form_password"] = _auth_message(exc)
+            else:
+                flash(t("Your new password is saved."))
+                return redirect(url_for("accounts.settings"))
+    return _settings_page(errors, status=400)
 
 
 # ---------- Saved scans ----------
@@ -508,7 +596,7 @@ def account_delete():
     except Exception:
         current_app.logger.exception("Account deletion failed")
         flash(t("Your account could not be deleted. Try again, or contact the MangoScan team."), "error")
-        return redirect(url_for("accounts.scans"))
+        return redirect(url_for("accounts.settings"))
     _clear_session()
     flash(t("Your account and all your saved scans were deleted."))
     return redirect(url_for("index"))

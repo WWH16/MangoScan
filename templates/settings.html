@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% from "_forms.html" import field, reveal_script %}
+
+{% block title %}MangoScan &middot; {{ _("Settings") }}{% endblock %}
+{% block body_class %}screen-settings{% endblock %}
+
+{% macro section_error(message) %}
+{% if message %}
+<div class="note note-error" role="alert">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    <p>{{ message }}</p>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="settings">
+    <div class="settings-head">
+        <h1 class="headline">{{ _("Settings") }}</h1>
+        <p class="lede">{{ _("Language, app install and your account.") }}</p>
+    </div>
+
+    <!-- Language -->
+    <section class="card" aria-labelledby="set-lang">
+        <div class="card-head">
+            <h2 class="card-title" id="set-lang">{{ _("Language") }}</h2>
+            <p class="card-desc">{{ _("Choose the language MangoScan uses on this phone.") }}</p>
+        </div>
+        <div class="segmented" role="group" aria-labelledby="set-lang">
+            <a class="segment" href="{{ url_for('i18n.set_lang', code='en', next=url_for('accounts.settings')) }}" lang="en"
+               {% if lang == 'en' %}aria-current="true"{% endif %}>English</a>
+            <a class="segment" href="{{ url_for('i18n.set_lang', code='fil', next=url_for('accounts.settings')) }}" lang="fil"
+               {% if lang == 'fil' %}aria-current="true"{% endif %}>Filipino</a>
+        </div>
+    </section>
+
+    <!-- Install -->
+    <section class="card" aria-labelledby="set-install">
+        <div class="card-head">
+            <h2 class="card-title" id="set-install">{{ _("Install MangoScan") }}</h2>
+            <p class="card-desc">{{ _("Add MangoScan to your home screen so it opens like an app.") }}</p>
+        </div>
+        <button type="button" class="btn btn-outline" id="btn-install" hidden>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span>{{ _("Add to home screen") }}</span>
+        </button>
+        <p class="install-note" id="install-done" hidden>{{ _("MangoScan is installed on this phone.") }}</p>
+        <p class="install-note" id="install-manual">{{ _("In your browser menu, tap “Add to Home screen” or “Install app”. On iPhone, tap Share, then “Add to Home Screen”.") }}</p>
+    </section>
+
+    {% if accounts_enabled %}
+    {% if user %}
+    <!-- Profile -->
+    <section class="card" aria-labelledby="set-profile">
+        <div class="card-head">
+            <h2 class="card-title" id="set-profile">{{ _("Profile") }}</h2>
+            <p class="card-desc">{{ _("Signed in as {email}.", email=user.email) }}</p>
+        </div>
+        {{ section_error(errors.form_profile) }}
+        <form class="auth-form" method="POST" action="{{ url_for('accounts.settings_profile') }}" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ field("name", _("Full name"), errors, value=form.name, autocomplete="name") }}
+            <div class="card-actions">
+                <button type="submit" class="btn btn-primary">{{ _("Save name") }}</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Password -->
+    <section class="card" aria-labelledby="set-password">
+        <div class="card-head">
+            <h2 class="card-title" id="set-password">{{ _("Password") }}</h2>
+            <p class="card-desc">{{ _("Enter your current password, then the new one.") }}</p>
+        </div>
+        {{ section_error(errors.form_password) }}
+        <form class="auth-form" method="POST" action="{{ url_for('accounts.settings_password') }}" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ field("current_password", _("Current password"), errors, type="password", autocomplete="current-password") }}
+            {{ field("new_password", _("New password"), errors, type="password", autocomplete="new-password", hint=_("At least 8 characters.")) }}
+            <div class="card-actions">
+                <button type="submit" class="btn btn-primary">{{ _("Change password") }}</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Session -->
+    <section class="card card-row" aria-labelledby="set-session">
+        <div class="card-head">
+            <h2 class="card-title" id="set-session">{{ _("Log out") }}</h2>
+            <p class="card-desc">{{ _("Log out of MangoScan on this phone.") }}</p>
+        </div>
+        <form method="POST" action="{{ url_for('accounts.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline">{{ _("Log out") }}</button>
+        </form>
+    </section>
+
+    <!-- Danger zone -->
+    <section class="card card-danger card-row" aria-labelledby="set-delete">
+        <div class="card-head">
+            <h2 class="card-title" id="set-delete">{{ _("Delete account") }}</h2>
+            <p class="card-desc">{{ _("Permanently delete your account, all saved scans and their photos.") }}</p>
+        </div>
+        <button type="button" class="btn btn-destructive" id="btn-account-delete" aria-haspopup="dialog">{{ _("Delete account") }}</button>
+    </section>
+    {% else %}
+    <!-- Account (logged out) -->
+    <section class="card" aria-labelledby="set-account">
+        <div class="card-head">
+            <h2 class="card-title" id="set-account">{{ _("Account") }}</h2>
+            <p class="card-desc">{{ _("Log in to save your scans and find them again on any phone. Scanning works without an account.") }}</p>
+        </div>
+        <div class="card-actions">
+            <a class="btn btn-primary" href="{{ url_for('accounts.login', next=url_for('accounts.settings')) }}">{{ _("Log in") }}</a>
+            <a class="btn btn-outline" href="{{ url_for('accounts.signup', next=url_for('accounts.settings')) }}">{{ _("Create account") }}</a>
+        </div>
+    </section>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% if user %}
+<dialog class="modal" id="account-dialog" aria-labelledby="account-title" aria-describedby="account-desc">
+    <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2 class="modal-title" id="account-title">{{ _("Delete your account?") }}</h2>
+        <p class="modal-desc" id="account-desc">{{ _("Your account, all your saved scans and their photos will be deleted for good. You can't undo this.") }}</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="btn-account-cancel">{{ _("Cancel") }}</button>
+            <button type="submit" class="btn btn-destructive" id="btn-account-confirm">{{ _("Delete account") }}</button>
+        </div>
+    </form>
+</dialog>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ reveal_script() }}
+<script>
+(() => {
+    // Install: use the browser's own prompt when it offers one, otherwise keep the manual steps
+    const installBtn = document.getElementById('btn-install');
+    const manual = document.getElementById('install-manual');
+    const done = document.getElementById('install-done');
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (standalone) { manual.hidden = true; done.hidden = false; }
+    let deferred = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferred = e;
+        installBtn.hidden = false;
+        manual.hidden = true;
+    });
+    installBtn.addEventListener('click', async () => {
+        if (!deferred) return;
+        deferred.prompt();
+        const choice = await deferred.userChoice;
+        deferred = null;
+        installBtn.hidden = true;
+        if (choice.outcome === 'accepted') done.hidden = false; else manual.hidden = false;
+    });
+    window.addEventListener('appinstalled', () => { installBtn.hidden = true; manual.hidden = true; done.hidden = false; });
+
+    // Delete account dialog
+    const dialog = document.getElementById('account-dialog');
+    if (!dialog) return;
+    const opener = document.getElementById('btn-account-delete');
+    const cancel = document.getElementById('btn-account-cancel');
+    const confirmBtn = document.getElementById('btn-account-confirm');
+    opener.addEventListener('click', () => { dialog.showModal(); cancel.focus(); });
+    cancel.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => opener.focus());
+    document.getElementById('account-form').addEventListener('submit', () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = {{ _('Deleting…')|tojson }};
+    });
+})();
+</script>
+{% endblock %}
