@@ -27,7 +27,9 @@ from i18n import t
 # Vercel serverless has a read-only filesystem; writable scratch is in /tmp
 IS_VERCEL = bool(os.environ.get("VERCEL"))
 
-app = Flask(__name__)
+# One copy of the static files, in public/static: Flask serves it locally and
+# Vercel's CDN serves the same folder at /static on the live site
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "public", "static"), static_url_path="/static")
 if IS_VERCEL:
     # Vercel terminates HTTPS at its proxy; trust its forwarded headers so
     # external links (email confirmation redirects) are built as https://<domain>
@@ -208,12 +210,20 @@ _static_hash = {}
 
 
 def static_version():
-    """Short hash of everything in static/, recomputed only when a file's size or time changes."""
-    static_dir = os.path.join(BASE_DIR, "static")
+    """Version for the service worker's cache: changes whenever the static files may have changed.
+
+    On Vercel the static files are served by the CDN and may not be inside this
+    function, so each deploy's commit (or deployment id) is used. Locally it is a
+    hash of public/static, recomputed only when a file's size or time changes.
+    """
+    deploy = os.environ.get("VERCEL_GIT_COMMIT_SHA") or os.environ.get("VERCEL_DEPLOYMENT_ID")
+    if deploy:
+        return deploy[:12]
+    static_dir = app.static_folder
     files = sorted(
         os.path.join(root, name)
         for root, _, names in os.walk(static_dir)
-        for name in names if name != "sw.js"
+        for name in names
     )
     signature = tuple((path, os.path.getsize(path), os.path.getmtime(path)) for path in files)
     if _static_hash.get("signature") != signature:
@@ -230,8 +240,7 @@ def static_version():
 def service_worker():
     # Served from the site root so it may control every page. A new static
     # version changes the worker's bytes, so phones replace their cached files.
-    with open(os.path.join(BASE_DIR, "static", "sw.js"), encoding="utf-8") as f:
-        script = f.read().replace("__STATIC_VERSION__", static_version())
+    script = render_template("sw.js", version=static_version())
     return app.response_class(script, mimetype="application/javascript",
                               headers={"Cache-Control": "no-cache"})
 

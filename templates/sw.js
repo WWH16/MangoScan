@@ -1,8 +1,9 @@
 // MangoScan service worker: makes the app installable and shows a friendly
 // page when there is no signal. Scanning itself always needs the internet.
-// app.py fills in VERSION from a hash of the static files, so any change to the
-// CSS, fonts or icons makes phones install this worker again and fetch new copies.
-const VERSION = 'mangoscan-__STATIC_VERSION__';
+// app.py fills in VERSION (the deploy's commit on Vercel, a hash of public/static
+// locally), so every change to the CSS, fonts or icons makes phones install this
+// worker again and fetch new copies.
+const VERSION = 'mangoscan-{{ version }}';
 const SHELL = [
     '/offline',
     '/static/css/style.css',

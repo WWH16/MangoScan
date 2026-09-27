@@ -21,8 +21,6 @@ __pycache__
 # Local upload / test scratch files
 uploads/*.json
 !uploads/.gitkeep
-static/uploads/*
-!static/uploads/.gitkeep
 
 # Local secrets
 .env

@@ -1,2 +1,0 @@
-Geist (variable, wght 100-900) and Geist Mono (variable, wght 400-600): SIL Open Font License 1.1.
-Downloaded from Google Fonts (latin subset) for self-hosting.

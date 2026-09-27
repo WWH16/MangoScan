@@ -19,8 +19,6 @@ instance/
 # Uploads / Temp files
 uploads/*
 !uploads/.gitkeep
-static/uploads/*
-!static/uploads/.gitkeep
 
 # Testing / MCP artifacts
 .playwright-mcp/
@@ -35,6 +33,5 @@ static/uploads/*
 *.gif
 
 # App icons are tiny and needed to install the app
-!static/icons/*.png
 !public/static/icons/*.png
 MangoScan-Overview.md
