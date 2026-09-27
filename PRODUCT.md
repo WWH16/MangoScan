@@ -16,7 +16,7 @@ MangoScan checks one mango from one photo (phone camera, live viewfinder, or a s
 
 Before classifying, it screens out photos it cannot judge (no single fruit in frame, too blurry, too dark or too bright) and asks for a better photo instead of guessing.
 
-Anyone can scan without an account. People who sign up (email and password, through Supabase Auth) get every scan saved with its photos under "My scans", can delete single scans, and can delete their whole account. The app can be installed to the phone's home screen.
+The site opens on a landing page that explains the three answers in plain words; the scanner itself lives at `/scan`, which the installed app opens directly. Anyone can scan without an account. People who sign up (email and password, through Supabase Auth) get every scan saved with its photos under "My scans", can delete single scans, and can delete their whole account. The app can be installed to the phone's home screen.
 
 ## Brand Personality
 
