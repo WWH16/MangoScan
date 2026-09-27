@@ -125,7 +125,7 @@
         <p class="modal-desc" id="delete-desc">{{ _("The photos and the reading will be removed from My scans. You can't undo this.") }}</p>
         <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="btn-delete-cancel">{{ _("Cancel") }}</button>
-            <button type="submit" class="btn btn-destructive" id="btn-delete-confirm">{{ _("Delete scan") }}</button>
+            <button type="submit" class="btn btn-destructive" id="btn-delete-confirm" data-loading-text="{{ _('Deleting…') }}"><span>{{ _("Delete scan") }}</span></button>
         </div>
     </form>
 </dialog>
@@ -138,7 +138,6 @@
 (() => {
     const dialog = document.getElementById('delete-dialog');
     const opener = document.getElementById('btn-delete-open');
-    const confirmBtn = document.getElementById('btn-delete-confirm');
     opener.addEventListener('click', () => {
         dialog.showModal();
         document.getElementById('btn-delete-cancel').focus();  // the safe choice is focused first
@@ -147,10 +146,6 @@
     // A tap on the dimmed backdrop cancels, like Escape
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
     dialog.addEventListener('close', () => opener.focus());
-    document.getElementById('delete-form').addEventListener('submit', () => {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = {{ _('Deleting…')|tojson }};
-    });
 })();
 </script>
 {% endif %}

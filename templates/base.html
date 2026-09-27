@@ -56,6 +56,40 @@
         {% endif %}
     </footer>
 
+    <script>
+    // Buttons that submit a form show a spinner until the next page arrives.
+    // A button's data-loading-text replaces its label while it waits.
+    window.MangoLoading = (() => {
+        function start(btn, text) {
+            if (!btn || btn.classList.contains('is-loading')) return;
+            const label = btn.querySelector('span') || btn;
+            btn.dataset.idleText = label.textContent;
+            text = text || btn.dataset.loadingText;
+            if (text) label.textContent = text;
+            btn.classList.add('is-loading');
+            btn.setAttribute('aria-busy', 'true');
+            btn.disabled = true;
+        }
+        function stop(btn) {
+            if (!btn || !btn.classList.contains('is-loading')) return;
+            const label = btn.querySelector('span') || btn;
+            if (btn.dataset.idleText) label.textContent = btn.dataset.idleText;
+            btn.classList.remove('is-loading');
+            btn.removeAttribute('aria-busy');
+            btn.disabled = false;
+        }
+        document.addEventListener('submit', (e) => {
+            if (e.defaultPrevented) return;
+            const btn = e.submitter || e.target.querySelector('button[type="submit"]');
+            if (btn && btn.classList.contains('btn')) start(btn);
+        });
+        // Back/forward cache brings the page back as it was left: release waiting buttons
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) document.querySelectorAll('.btn.is-loading').forEach(stop);
+        });
+        return { start, stop };
+    })();
+    </script>
     {% block scripts %}{% endblock %}
     <script>
     if ('serviceWorker' in navigator) {

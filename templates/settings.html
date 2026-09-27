@@ -61,7 +61,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {{ field("name", _("Full name"), errors, value=form.name, autocomplete="name") }}
             <div class="card-actions">
-                <button type="submit" class="btn btn-primary">{{ _("Save name") }}</button>
+                <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Save name") }}</span></button>
             </div>
         </form>
     </section>
@@ -78,7 +78,7 @@
             {{ field("current_password", _("Current password"), errors, type="password", autocomplete="current-password") }}
             {{ field("new_password", _("New password"), errors, type="password", autocomplete="new-password", hint=_("At least 8 characters.")) }}
             <div class="card-actions">
-                <button type="submit" class="btn btn-primary">{{ _("Change password") }}</button>
+                <button type="submit" class="btn btn-primary" data-loading-text="{{ _('Saving…') }}"><span>{{ _("Change password") }}</span></button>
             </div>
         </form>
     </section>
@@ -91,7 +91,7 @@
         </div>
         <form method="POST" action="{{ url_for('accounts.logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline">{{ _("Log out") }}</button>
+            <button type="submit" class="btn btn-outline" data-loading-text="{{ _('Logging out…') }}"><span>{{ _("Log out") }}</span></button>
         </form>
     </section>
 
@@ -127,7 +127,7 @@
         <p class="modal-desc" id="account-desc">{{ _("Your account, all your saved scans and their photos will be deleted for good. You can't undo this.") }}</p>
         <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="btn-account-cancel">{{ _("Cancel") }}</button>
-            <button type="submit" class="btn btn-destructive" id="btn-account-confirm">{{ _("Delete account") }}</button>
+            <button type="submit" class="btn btn-destructive" id="btn-account-confirm" data-loading-text="{{ _('Deleting…') }}"><span>{{ _("Delete account") }}</span></button>
         </div>
     </form>
 </dialog>
@@ -166,15 +166,10 @@
     if (!dialog) return;
     const opener = document.getElementById('btn-account-delete');
     const cancel = document.getElementById('btn-account-cancel');
-    const confirmBtn = document.getElementById('btn-account-confirm');
     opener.addEventListener('click', () => { dialog.showModal(); cancel.focus(); });
     cancel.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
     dialog.addEventListener('close', () => opener.focus());
-    document.getElementById('account-form').addEventListener('submit', () => {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = {{ _('Deleting…')|tojson }};
-    });
 })();
 </script>
 {% endblock %}

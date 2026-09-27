@@ -221,7 +221,22 @@ img { max-width: 100%; display: block; }
     transition: background-color 150ms, color 150ms, border-color 150ms, box-shadow 150ms;
     -webkit-tap-highlight-color: transparent;
 }
-.btn:disabled { opacity: 0.6; cursor: progress; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Loading: a turning ring before the label while the next page loads */
+.btn.is-loading { cursor: progress; }
+.btn.is-loading:disabled { opacity: 0.85; }
+.btn.is-loading::before {
+    content: "";
+    width: 1em;
+    height: 1em;
+    flex: none;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    animation: spin 650ms linear infinite;
+}
+.btn.is-loading .icon { display: none; }
 
 .btn-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: var(--shadow-xs); }
 .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
@@ -1236,6 +1251,11 @@ img { max-width: 100%; display: block; }
         transition-duration: 1ms !important;
     }
     .reading-photo::after { top: 50%; }
+    .btn.is-loading::before,
+    .pipeline li.is-current::before {
+        animation-duration: 1.5s !important;
+        animation-iteration-count: infinite !important;
+    }
 }
 
 /* ---------- Wide screens: two columns ---------- */

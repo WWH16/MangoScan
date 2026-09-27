@@ -209,6 +209,8 @@ FIL = {
     "Show": "Ipakita",
     "Hide": "Itago",
     "Please wait…": "Sandali lang…",
+    "Saving…": "Sine-save…",
+    "Logging out…": "Nagla-log out…",
     "Confirming": "Kinukumpirma",
     "One moment.": "Sandali lang.",
     "This link does not work.": "Hindi gumagana ang link na ito.",

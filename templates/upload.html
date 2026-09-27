@@ -181,8 +181,9 @@ const T = {{ {
     window.addEventListener('pageshow', (e) => {
         if (!e.persisted) return;
         stopReading();
+        MangoLoading.stop(submitBtn);
+        MangoLoading.stop(captureBtn);
         submitBtn.disabled = false;
-        captureBtn.disabled = false;
         captureText.textContent = T.captureCheck;
         $('image-base64').value = '';
     });
@@ -229,8 +230,7 @@ const T = {{ {
 
     captureBtn.addEventListener('click', () => {
         if (!video.videoWidth) { showError(T.cameraStarting); return; }
-        captureBtn.disabled = true;
-        captureText.textContent = T.checking;
+        MangoLoading.start(captureBtn, T.checking);
 
         // Downscale to a 1280px bounding box, then send it as a normal form post
         // so the result page comes straight back from the server
@@ -261,6 +261,7 @@ const T = {{ {
         previewImg.removeAttribute('src');
         preview.hidden = true;
         showSpecimen(null);
+        MangoLoading.stop(submitBtn);
         submitBtn.hidden = true;
         dropzone.hidden = false;
     }
@@ -309,8 +310,7 @@ const T = {{ {
         dropzone.hidden = true;
         preview.hidden = false;
         submitBtn.hidden = false;
-        submitBtn.disabled = true;
-        submitText.textContent = T.preparing;
+        MangoLoading.start(submitBtn, T.preparing);
 
         const small = await shrink(file);
         if (small.size > 10 * 1024 * 1024) {
@@ -325,8 +325,8 @@ const T = {{ {
             fileInput.files = dt.files;
             cameraInput.value = '';
         }
+        MangoLoading.stop(submitBtn);
         submitText.textContent = T.checkThis;
-        submitBtn.disabled = false;
         submitBtn.focus();
     }
 
@@ -340,7 +340,7 @@ const T = {{ {
             showError(T.chooseFirst);
             return;
         }
-        submitBtn.disabled = true;
+        MangoLoading.start(submitBtn, T.checking);
         startReading(previewUrl);
     });
 

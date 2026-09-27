@@ -181,6 +181,7 @@ One column on phones, two columns from 900px (content max 1120px, 16px gutters).
 - **Accordion:** full-width row with a chevron that rotates when open, closed by default.
 - **Alert:** 8px radius box; red tint for errors, green tint for confirmations.
 - **Alert dialog:** deleting a saved scan opens a native `<dialog>` card (max 440px) over a 60% black backdrop: title "Delete this scan?", a one-line consequence, then an outline "Cancel" (focused first) and a red "Delete scan". Buttons stack full-width on phones with Delete on top; Escape or a backdrop tap cancels.
+- **Button (loading):** a button that sends a form shows a turning ring (1em, 2px, open on one side) in place of its icon, a short waiting label ("Please wait…", "Saving…", "Deleting…", "Checking…") and stays disabled until the next page arrives. The ring keeps turning slowly under reduced motion, because it reports status.
 - **Dialog:** the checking state is a centred card over a 60% black overlay, with the photo, a white scan line and the pipeline steps (spinner for the current step, checks for finished ones).
 
 ## Motion
