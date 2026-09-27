@@ -4,8 +4,9 @@ import mimetypes
 import base64
 import socket
 import binascii
+import hashlib
 from datetime import timedelta
-from flask import Flask, render_template, request, url_for, redirect, g, send_from_directory
+from flask import Flask, render_template, request, url_for, redirect, g
 from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -203,12 +204,36 @@ def predict():
 
 # ---------- Install to home screen (PWA) ----------
 
+_static_hash = {}
+
+
+def static_version():
+    """Short hash of everything in static/, recomputed only when a file's size or time changes."""
+    static_dir = os.path.join(BASE_DIR, "static")
+    files = sorted(
+        os.path.join(root, name)
+        for root, _, names in os.walk(static_dir)
+        for name in names if name != "sw.js"
+    )
+    signature = tuple((path, os.path.getsize(path), os.path.getmtime(path)) for path in files)
+    if _static_hash.get("signature") != signature:
+        digest = hashlib.sha256()
+        for path in files:
+            digest.update(os.path.relpath(path, static_dir).encode())
+            with open(path, "rb") as f:
+                digest.update(f.read())
+        _static_hash.update(signature=signature, version=digest.hexdigest()[:12])
+    return _static_hash["version"]
+
+
 @app.route("/sw.js")
 def service_worker():
-    # Served from the site root so it may control every page
-    resp = send_from_directory(os.path.join(BASE_DIR, "static"), "sw.js", mimetype="application/javascript")
-    resp.headers["Cache-Control"] = "no-cache"
-    return resp
+    # Served from the site root so it may control every page. A new static
+    # version changes the worker's bytes, so phones replace their cached files.
+    with open(os.path.join(BASE_DIR, "static", "sw.js"), encoding="utf-8") as f:
+        script = f.read().replace("__STATIC_VERSION__", static_version())
+    return app.response_class(script, mimetype="application/javascript",
+                              headers={"Cache-Control": "no-cache"})
 
 
 @app.route("/offline")
