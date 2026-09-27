@@ -348,6 +348,17 @@ FIL = {
     "You are logged out.": "Naka-log out ka na.",
     "If {email} has an account, we sent a link to set a new password.":
         "Kung may account ang {email}, nagpadala kami ng link para gumawa ng bagong password.",
+    "We just sent you an email. Wait {n} seconds before asking for another one.":
+        "Kapapadala lang namin ng email. Maghintay ng {n} segundo bago humingi ng panibago.",
+    "We have sent too many emails for now. Try again in an hour.":
+        "Masyadong marami na ang naipadalang email sa ngayon. Subukan ulit pagkalipas ng isang oras.",
+    "Send the email again": "Ipadala ulit ang email",
+    "No email after a few minutes? Check your spam folder, or send it again.":
+        "Wala pa ring email pagkalipas ng ilang minuto? Tingnan ang spam folder, o ipadala ulit.",
+    "We sent a new link to {email}. Open the newest email to confirm your account, then log in.":
+        "Nagpadala kami ng bagong link sa {email}. Buksan ang pinakabagong email para kumpirmahin ang iyong account, saka mag-log in.",
+    "We could not send the email right now. Try again later, or contact the MangoScan team.":
+        "Hindi namin maipadala ang email ngayon. Subukan ulit mamaya, o makipag-ugnayan sa MangoScan team.",
     "Link not valid": "Hindi wasto ang link",
     "Open the newest email from MangoScan, or ask for a new link.":
         "Buksan ang pinakabagong email mula sa MangoScan, o humingi ng bagong link.",

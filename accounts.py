@@ -160,10 +160,21 @@ def _auth_message(exc):
         return t("An account with this email already exists. Log in instead.")
     if "password" in text and ("weak" in text or "at least" in text or "characters" in text):
         return t("Choose a stronger password: at least {n} characters.", n=MIN_PASSWORD)
+    # Supabase waits about a minute before emailing the same address again
+    wait = re.search(r"after (\d+) seconds?", text)
+    if "security purposes" in text and wait:
+        return t("We just sent you an email. Wait {n} seconds before asking for another one.", n=wait.group(1))
+    # The project as a whole may only send a few emails an hour
+    if "email rate limit" in text:
+        return t("We have sent too many emails for now. Try again in an hour.")
     if "rate limit" in text or "too many" in text or "security purposes" in text:
         return t("Too many tries. Wait a minute, then try again.")
     if "expired" in text or ("invalid" in text and "token" in text):
         return t("This link has expired or was already used. Ask for a new one.")
+    if "error sending" in text or "not authorized" in text:
+        # Supabase could not send the email (its built-in sender only mails the project team)
+        current_app.logger.warning("Supabase could not send an email: %s", exc)
+        return t("We could not send the email right now. Try again later, or contact the MangoScan team.")
     current_app.logger.warning("Supabase auth error: %s", exc)
     return t("Something went wrong on our side. Try again in a moment.")
 
@@ -208,10 +219,9 @@ def signup():
                     _store_session(res.session, res.user)
                     flash(t("Welcome, {name}. Your scans will now be saved.", name=form["name"]))
                     return redirect(_safe_next())
-                return render_template("auth_message.html",
-                                       title=t("Check your email"),
-                                       heading=t("Check your email."),
-                                       body=t("We sent a link to {email}. Open it to confirm your account, then log in.", email=form["email"]))
+                # Redirect, so reloading the page does not send the form (and another email) again
+                session["pending_email"] = form["email"]
+                return redirect(url_for("accounts.check_email"))
     return render_template("signup.html", form=form, errors=errors)
 
 
@@ -238,6 +248,9 @@ def login():
                 res = client().auth.sign_in_with_password({"email": form["email"], "password": password})
             except Exception as exc:
                 errors["form"] = _auth_message(exc)
+                # The account exists but was never confirmed: offer a fresh link
+                if "email not confirmed" in str(getattr(exc, "message", "") or exc).lower():
+                    return render_template("login.html", form=form, errors=errors, resend_email=form["email"])
             else:
                 _store_session(res.session, res.user)
                 return redirect(_safe_next())
@@ -284,6 +297,50 @@ def forgot():
                                    heading=t("Check your email."),
                                    body=t("If {email} has an account, we sent a link to set a new password.", email=form["email"]))
     return render_template("forgot.html", form=form, errors=errors)
+
+
+@bp.route("/auth/resend", methods=["POST"])
+def resend():
+    """Send the sign-up confirmation link again, for an account that was never confirmed.
+
+    Supabase creates the account at sign-up and keeps it unconfirmed until the link is opened,
+    so a lost email is fixed with a new link, not a new account.
+    """
+    _require_enabled()
+    _check_csrf()
+    email = request.form.get("email", "").strip().lower()
+    if not EMAIL_RE.match(email):
+        return redirect(url_for("accounts.signup"))
+    session["pending_email"] = email
+    if _too_many():
+        flash(t("Too many tries. Wait a few minutes, then try again."), "error")
+    else:
+        try:
+            client().auth.resend({
+                "type": "signup",
+                "email": email,
+                "options": {"email_redirect_to": url_for("accounts.confirm", _external=True)},
+            })
+        except Exception as exc:
+            flash(_auth_message(exc), "error")
+        else:
+            flash(t("We sent a new link to {email}. Open the newest email to confirm your account, then log in.", email=email))
+    # Redirect, so reloading the page does not ask for another email
+    return redirect(url_for("accounts.check_email"))
+
+
+@bp.route("/auth/check-email")
+def check_email():
+    """Where sign-up and "send it again" land: tells the user to open the link, with a button to resend."""
+    _require_enabled()
+    email = session.get("pending_email")
+    if not email:
+        return redirect(url_for("accounts.signup"))
+    return render_template("auth_message.html",
+                           title=t("Check your email"),
+                           heading=t("Check your email."),
+                           body=t("We sent a link to {email}. Open it to confirm your account, then log in.", email=email),
+                           resend_email=email)
 
 
 def _store_tokens(access_token, refresh_token, expires_at):

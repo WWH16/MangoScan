@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_forms.html" import resend_form with context %}
 
 {% block title %}MangoScan &middot; {{ title }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}
@@ -7,6 +8,10 @@
 <section class="auth" aria-labelledby="auth-heading">
     <h1 id="auth-heading" class="headline">{{ heading }}</h1>
     {% if body %}<p class="lede">{{ body }}</p>{% endif %}
+    {% if resend_email %}
+    <p class="lede">{{ _("No email after a few minutes? Check your spam folder, or send it again.") }}</p>
+    {{ resend_form(resend_email) }}
+    {% endif %}
     <div class="minor-actions">
         <a class="link-btn" href="{{ url_for('scan') }}">{{ _("Scan a mango") }}</a>
         {% if accounts_enabled and not user %}<a class="link-btn" href="{{ url_for('accounts.login') }}">{{ _("Log in") }}</a>{% endif %}

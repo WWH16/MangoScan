@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_forms.html" import form_error, field, submit, reveal_script %}
+{% from "_forms.html" import form_error, field, submit, resend_form, reveal_script with context %}
 
 {% block title %}MangoScan &middot; {{ _("Log in") }}{% endblock %}
 {% block body_class %}screen-auth{% endblock %}
@@ -10,6 +10,7 @@
     <p class="lede">{{ _("Your scans are saved to your account, so you can find them again on any phone.") }}</p>
 
     {{ form_error(errors) }}
+    {% if resend_email %}{{ resend_form(resend_email) }}{% endif %}
 
     <form class="auth-form" method="POST" action="{{ url_for('accounts.login', next=request.args.get('next')) }}" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

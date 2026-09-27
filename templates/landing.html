@@ -196,6 +196,12 @@
 
 {% block scripts %}
 <script>
+// Supabase sends email links to the site root when their redirect is not allowed;
+// hand the tokens (or the error) in the address fragment to the confirm page
+if (/(^#|&)(access_token|error_code)=/.test(location.hash)) {
+    location.replace({{ url_for('accounts.confirm')|tojson }} + location.hash);
+}
+
 // Step 2 plays the real checking sequence once when it scrolls into view.
 // Without JavaScript, or with reduced motion, it stays in its finished state.
 (() => {

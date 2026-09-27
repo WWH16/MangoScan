@@ -41,6 +41,16 @@
 </button>
 {% endmacro %}
 
+{% macro resend_form(email) %}
+<form class="auth-form" method="POST" action="{{ url_for('accounts.resend') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="email" value="{{ email }}">
+    <button type="submit" class="btn btn-outline btn-block" data-loading-text="{{ _('Please wait…') }}">
+        <span>{{ _("Send the email again") }}</span>
+    </button>
+</form>
+{% endmacro %}
+
 {% macro reveal_script() %}
 <script>
 document.querySelectorAll('[data-reveal]').forEach((btn) => {
