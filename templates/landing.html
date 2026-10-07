@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% from "_pipeline.html" import pipeline %}
 {% from "_guide.html" import guide %}
+{% from "_forms.html" import guest_form with context %}
 
 {% block guide %}{{ guide("home", [
     {"target": ".intro-actions .landing-cta", "title": _("Start here"),
      "text": _("Tap Scan a mango to check a fruit. It is free and you do not need an account.")},
+    {"target": ".intro-actions .guest-form", "title": _("Want your scans kept?"),
+     "text": _("Tap Continue as guest. Every mango you scan is saved under My scans, with no email needed.")},
     {"target": ".trio", "title": _("One of three answers"),
      "text": _("MangoScan tells you if a mango is healthy, has anthracnose or has stem-end rot, and what to do with it.")},
     {"target": "#nav-settings", "title": _("Language and app"),
@@ -28,6 +31,9 @@
         <p class="lede">{{ _html("MangoScan tells you if the fruit is <strong>healthy</strong>, has <strong>anthracnose</strong> or has <strong>stem-end rot</strong>, and what to do with it.") }}</p>
         <div class="intro-actions">
             {{ scan_button() }}
+            {% if accounts_enabled and not user %}
+            {{ guest_form(_("Saves every scan. No email needed."), btn_class="btn-take") }}
+            {% endif %}
             <p class="intro-note">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
                 {{ _("Free. No account needed.") }}
@@ -150,12 +156,6 @@
             </dt>
             <dd>
                 {{ _("Anyone can scan. Nothing is kept unless you log in or continue as a guest.") }}
-                {% if accounts_enabled and not user %}
-                <form method="POST" action="{{ url_for('accounts.guest') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="link-btn">{{ _("Continue as guest") }}</button>
-                </form>
-                {% endif %}
             </dd>
         </div>
         {% if accounts_enabled %}

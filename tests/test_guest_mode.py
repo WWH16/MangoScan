@@ -222,5 +222,199 @@ class ReviewFixesTest(GuestTestCase):
         self.sb.rpc.assert_not_called()
 
 
+class GuestEdgeCasesTest(GuestTestCase):
+    """Edge cases around starting, using, upgrading and leaving guest mode."""
+
+    def guest_signin_ok(self):
+        self.sb.auth.sign_in_anonymously.return_value = SimpleNamespace(
+            session=fake_session(FakeUser()), user=FakeUser())
+
+    # ---------- Starting guest mode ----------
+
+    def test_second_tap_does_not_create_another_guest(self):
+        self.sign_in(anon=True)
+        res = self.client.post("/guest", data={"csrf_token": self.csrf()})
+        self.assertEqual(res.status_code, 302)
+        self.sb.auth.sign_in_anonymously.assert_not_called()
+
+    def test_email_user_tapping_guest_stays_signed_in(self):
+        self.sign_in(anon=False, email="a@b.co")
+        self.client.post("/guest", data={"csrf_token": self.csrf()})
+        self.sb.auth.sign_in_anonymously.assert_not_called()
+        self.assertFalse(self.auth()["anon"])
+
+    def test_rate_limited_guest_start_calls_nothing(self):
+        with mock.patch("ratelimit.allow", return_value=False):
+            res = self.client.post("/guest", data={"csrf_token": self.csrf()}, follow_redirects=True)
+        self.sb.auth.sign_in_anonymously.assert_not_called()
+        self.assertIn("Too many tries.", res.get_data(as_text=True))
+        self.assertIsNone(self.auth())
+
+    def test_guest_get_does_not_start_guest(self):
+        res = self.client.get("/guest")
+        self.assertEqual(res.status_code, 302)  # the app turns 405 into a redirect to /scan
+        self.sb.auth.sign_in_anonymously.assert_not_called()
+
+    def test_guest_without_supabase_config_is_unavailable(self):
+        with mock.patch.dict(os.environ, {"SUPABASE_URL": ""}):
+            res = self.client.post("/guest", data={"csrf_token": self.csrf()})
+            self.assertEqual(res.status_code, 503)
+            self.assertNotIn('class="guest-form', self.client.get("/").get_data(as_text=True))
+        self.sb.auth.sign_in_anonymously.assert_not_called()
+
+    def test_guest_honours_same_site_next(self):
+        self.guest_signin_ok()
+        res = self.client.post("/guest?next=/scans", data={"csrf_token": self.csrf()})
+        self.assertTrue(res.headers["Location"].endswith("/scans"))
+
+    def test_guest_ignores_next_to_another_site(self):
+        self.guest_signin_ok()
+        for bad in ("//evil.example", "https://evil.example", "/\\evil.example"):
+            res = self.client.post("/guest", query_string={"next": bad}, data={"csrf_token": self.csrf()})
+            self.assertTrue(res.headers["Location"].endswith("/scan"), bad)
+            with self.client.session_transaction() as s:
+                s.pop("auth", None)
+
+    def test_failed_guest_start_never_redirects_off_site(self):
+        self.sb.auth.sign_in_anonymously.side_effect = Exception("disabled")
+        res = self.client.post("/guest", data={"csrf_token": self.csrf()},
+                               headers={"Referer": "https://evil.example/phish"})
+        self.assertNotIn("evil.example", res.headers["Location"])
+
+    def test_failed_guest_start_returns_to_same_site_page(self):
+        self.sb.auth.sign_in_anonymously.side_effect = Exception("disabled")
+        res = self.client.post("/guest", data={"csrf_token": self.csrf()},
+                               headers={"Referer": "http://localhost/login"})
+        self.assertTrue(res.headers["Location"].endswith("/login"))
+
+    # ---------- Using guest mode ----------
+
+    def test_guest_scan_is_saved_to_guest_account(self):
+        import io
+        import cv2
+        import numpy as np
+        self.sign_in(anon=True)
+        img = np.full((64, 64, 3), 120, np.uint8)
+        jpg = cv2.imencode(".jpg", img)[1].tobytes()
+        scan_id = "11111111-1111-1111-1111-111111111111"
+        with mock.patch("models.inference.overlay_mask", return_value=np.ones((64, 64), np.uint8)), \
+             mock.patch("models.inference.check_photo", return_value=None), \
+             mock.patch("models.inference.predict", return_value=("Healthy", 0.9)), \
+             mock.patch("models.inference.generate_detection_overlay", return_value=(img, {}, {})), \
+             mock.patch("accounts.save_scan", return_value=scan_id) as save:
+            res = self.client.post("/predict", data={"image": (io.BytesIO(jpg), "m.jpg")},
+                                   content_type="multipart/form-data")
+        self.assertEqual(save.call_args[0][0]["uid"], "guest-1")
+        self.assertTrue(res.headers["Location"].endswith("/scans/" + scan_id))
+
+    def test_header_shows_my_scans_for_guest(self):
+        self.sign_in(anon=True)
+        html = self.client.get("/scan").get_data(as_text=True)
+        self.assertIn('href="/scans"', html)
+        self.assertNotIn('href="/login" class="nav-link"', html)
+
+    def test_token_refresh_keeps_guest_flag(self):
+        with self.client.session_transaction() as s:
+            s["auth"] = {"at": "old", "rt": "rt", "exp": 0, "uid": "guest-1", "email": None, "name": "", "anon": True}
+        self.sb.auth.refresh_session.return_value = SimpleNamespace(
+            session=fake_session(FakeUser()), user=FakeUser())
+        self.client.get("/settings")
+        self.assertTrue(self.auth()["anon"])
+        self.assertEqual(self.auth()["at"], "at")
+
+    def test_old_cookie_without_anon_key_is_an_email_user(self):
+        with self.client.session_transaction() as s:
+            s["auth"] = {"at": "at", "rt": "rt", "exp": int(time.time()) + 3600,
+                         "uid": "u1", "email": "a@b.co", "name": "Juan"}
+        html = self.client.get("/settings").get_data(as_text=True)
+        self.assertIn("Log out", html)
+        self.assertNotIn("Leave guest mode", html)
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": "guest"})
+        self.sb.rpc.assert_not_called()
+
+    def test_guest_delete_refused_when_supabase_unreachable(self):
+        self.sign_in(anon=True)
+        self.sb.auth.get_user.side_effect = Exception("network down")
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": "guest"})
+        self.sb.rpc.assert_not_called()
+        self.assertIsNotNone(self.auth())
+
+    def test_guest_cannot_change_password(self):
+        self.sign_in(anon=True)
+        # A guest has no email, so Supabase refuses the password check
+        self.sb.auth.sign_in_with_password.side_effect = Exception("missing email")
+        self.client.post("/settings/password", data={"csrf_token": self.csrf(),
+                                                      "current_password": "x" * 8, "new_password": "y" * 8})
+        self.sb.auth.update_user.assert_not_called()
+
+    # ---------- Upgrading ----------
+
+    def test_guest_signup_validates_name_and_email(self):
+        self.sign_in(anon=True)
+        for data in ({"name": "", "email": "juan@b.co"}, {"name": "Juan", "email": "not-an-email"}):
+            res = self.client.post("/signup", data={"csrf_token": self.csrf(), **data})
+            self.assertEqual(res.status_code, 200, data)
+        self.sb.auth.update_user.assert_not_called()
+
+    def test_guest_signup_ignores_posted_password(self):
+        self.sign_in(anon=True)
+        self.sb.auth.set_session.return_value = None
+        self.client.post("/signup", data={"csrf_token": self.csrf(), "name": "Juan",
+                                           "email": "juan@b.co", "password": "x"})
+        self.assertNotIn("password", self.sb.auth.update_user.call_args[0][0])
+
+    def test_guest_signup_normalises_email(self):
+        self.sign_in(anon=True)
+        self.sb.auth.set_session.return_value = None
+        self.client.post("/signup", data={"csrf_token": self.csrf(), "name": " Juan ", "email": "  Juan@B.Co "})
+        self.assertEqual(self.sb.auth.update_user.call_args[0][0],
+                         {"email": "juan@b.co", "data": {"full_name": "Juan"}})
+
+    def test_guest_signup_rate_limited(self):
+        self.sign_in(anon=True)
+        with mock.patch("ratelimit.allow", return_value=False):
+            res = self.client.post("/signup", data={"csrf_token": self.csrf(), "name": "Juan", "email": "juan@b.co"})
+        self.assertEqual(res.status_code, 429)
+        self.sb.auth.update_user.assert_not_called()
+
+    def test_guest_signup_needs_csrf(self):
+        self.sign_in(anon=True)
+        res = self.client.post("/signup", data={"name": "Juan", "email": "juan@b.co"})
+        self.assertEqual(res.status_code, 400)
+        self.sb.auth.update_user.assert_not_called()
+
+    def test_recovery_link_is_not_hijacked_by_pending_upgrade(self):
+        self.sign_in(anon=False, email="juan@b.co")
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        user = FakeUser(email="juan@b.co", anon=False)
+        self.sb.auth.verify_otp.return_value = SimpleNamespace(session=fake_session(user), user=user)
+        res = self.client.get("/auth/confirm?token_hash=abc&type=recovery")
+        self.assertTrue(res.headers["Location"].endswith("/reset-password"))
+
+    def test_bad_confirm_link_keeps_guest_and_pending_upgrade(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        self.sb.auth.verify_otp.side_effect = Exception("Token has expired or is invalid")
+        res = self.client.get("/auth/confirm?token_hash=abc&type=email_change")
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue(self.auth()["anon"])
+        with self.client.session_transaction() as s:
+            self.assertTrue(s["upgrade_pending"])  # a fresh link still finishes the upgrade
+
+    # ---------- Language ----------
+
+    def test_guest_screens_in_filipino(self):
+        self.client.set_cookie("lang", "fil")
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertIn("Magpatuloy bilang bisita", html)
+        self.assertNotIn("Continue as guest", html)
+        self.sign_in(anon=True)
+        html = self.client.get("/settings").get_data(as_text=True)
+        self.assertIn("Umalis sa guest mode", html)
+        self.assertNotIn("Leave guest mode", html)
+
+
 if __name__ == "__main__":
     unittest.main()

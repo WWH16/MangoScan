@@ -1127,6 +1127,10 @@ button.segment { width: 100%; border: 0; background: none; font-family: inherit;
 .intro .lede { margin: 0; font-size: 1.0625rem; }
 .intro-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2); }
 .landing-cta { width: 100%; }
+/* "Continue as guest": outlined, so it is seen but never wins over the main action */
+.guest-form { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.guest-form .btn { width: 100%; }
+.guest-note { margin: 0; font-size: 0.875rem; color: var(--muted-foreground); text-align: center; }
 .intro-note {
     display: flex;
     align-items: center;
@@ -1347,7 +1351,10 @@ button.segment { width: 100%; border: 0; background: none; font-family: inherit;
 
 @media (min-width: 600px) {
     .landing-cta { width: auto; align-self: flex-start; padding: 0 var(--space-6); }
-    .intro-actions { flex-direction: row; align-items: center; gap: var(--space-5); }
+    .intro-actions { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: var(--space-3) var(--space-4); }
+    .intro-actions .guest-form .btn { width: auto; padding: 0 var(--space-6); }
+    .intro-actions .guest-note { text-align: left; }
+    .intro-note { flex-basis: 100%; }
     .closing { align-items: flex-start; padding: var(--space-7); }
 }
 

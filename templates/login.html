@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_forms.html" import form_error, field, submit, resend_form, reveal_script with context %}
+{% from "_forms.html" import form_error, field, submit, resend_form, guest_form, reveal_script with context %}
 {% from "_guide.html" import guide %}
 
 {% block guide %}{{ guide("login", [
@@ -37,11 +37,7 @@
         <a class="link-btn" href="{{ url_for('accounts.forgot', email=form.email or None) }}">{{ _("Forgot password?") }}</a>
     </div>
     {% if not (user and user.anon) %}
-    <form class="auth-foot" method="POST" action="{{ url_for('accounts.guest') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-outline btn-block">{{ _("Continue as guest") }}</button>
-        <p class="field-hint">{{ _("No email needed. Your scans are saved on this phone. Create an account later to keep them for good.") }}</p>
-    </form>
+    {{ guest_form(_("No email needed. Your scans are saved on this phone. Create an account later to keep them for good."), "auth-foot") }}
     {% endif %}
 </section>
 {% endblock %}

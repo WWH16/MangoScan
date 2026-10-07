@@ -11,6 +11,7 @@ import re
 import time
 import secrets
 from functools import wraps
+from urllib.parse import urlsplit
 from datetime import datetime, timezone
 
 import ratelimit
@@ -197,7 +198,7 @@ def signup():
         _check_csrf()
         if _too_many():
             errors["form"] = t("Too many tries. Wait a few minutes, then try again.")
-            return render_template("signup.html", form=form, errors=errors, is_guest=is_guest), 429
+            return render_template("signup.html", form=form, errors=errors), 429
         form["name"] = request.form.get("name", "").strip()
         form["email"] = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
@@ -241,7 +242,7 @@ def signup():
                 # Redirect, so reloading the page does not send the form (and another email) again
                 session["pending_email"] = form["email"]
                 return redirect(url_for("accounts.check_email"))
-    return render_template("signup.html", form=form, errors=errors, is_guest=is_guest)
+    return render_template("signup.html", form=form, errors=errors)
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -291,6 +292,12 @@ def logout():
     return redirect(url_for("index"))
 
 
+def _same_site_referrer():
+    """The page the visitor came from, only when it is on this site."""
+    ref = urlsplit(request.referrer or "")
+    return ref.path if ref.netloc == request.host and ref.path.startswith("/") else url_for("index")
+
+
 @bp.route("/guest", methods=["POST"])
 def guest():
     """Start guest mode: an anonymous Supabase user whose scans are saved like an account's."""
@@ -300,14 +307,14 @@ def guest():
         return redirect(_safe_next())
     if _too_many():
         flash(t("Too many tries. Wait a few minutes, then try again."), "error")
-        return redirect(request.referrer or url_for("index"))
+        return redirect(_same_site_referrer())
     try:
         res = client().auth.sign_in_anonymously()
     except Exception as exc:
         # Anonymous sign-ins switched off in Supabase, or its per-IP limit reached
         current_app.logger.warning("Guest sign-in failed: %s", exc)
         flash(t("Guest mode is not available right now. You can still scan without saving, or create an account."), "error")
-        return redirect(request.referrer or url_for("index"))
+        return redirect(_same_site_referrer())
     _store_session(res.session, res.user)
     flash(t("You are now a guest. Your scans are saved on this phone's MangoScan."))
     return redirect(_safe_next())
@@ -425,13 +432,7 @@ def confirm():
             current_app.logger.warning("Email link tokens rejected: %s", exc)
             return render_template("auth_message.html", title=t("Link not valid"), heading=t("This link does not work."),
                                    body=t("Open the newest email from MangoScan, or ask for a new link.")), 400
-        if kind == "recovery":
-            return redirect(url_for("accounts.reset_password"))
-        if session.pop("upgrade_pending", False):
-            flash(t("Your email is confirmed. Now choose a password to finish your account."))
-            return redirect(url_for("accounts.reset_password"))
-        flash(t("Your email is confirmed. Your scans will now be saved."))
-        return redirect(url_for("scan"))
+        return _after_confirm(kind)
 
     token_hash = request.args.get("token_hash", "")
     kind = request.args.get("type", "")
@@ -448,6 +449,11 @@ def confirm():
                                body=_auth_message(exc)), 400
     if res.session:
         _store_session(res.session, res.user)
+    return _after_confirm(kind)
+
+
+def _after_confirm(kind):
+    """Where an email link leads once its session is stored."""
     if kind == "recovery":
         return redirect(url_for("accounts.reset_password"))
     if session.pop("upgrade_pending", False):

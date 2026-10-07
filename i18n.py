@@ -191,6 +191,10 @@ FIL = {
     "Create an account": "Gumawa ng account",
     "Forgot password?": "Nakalimutan ang password?",
     "Continue as guest": "Magpatuloy bilang bisita",
+    "Saves every scan. No email needed.": "Naka-save ang bawat scan. Hindi kailangan ng email.",
+    "Want your scans kept?": "Gusto mong maitago ang iyong mga scan?",
+    "Tap Continue as guest. Every mango you scan is saved under My scans, with no email needed.":
+        "I-tap ang Magpatuloy bilang bisita. Naka-save sa Aking mga scan ang bawat manggang ini-scan mo, at hindi kailangan ng email.",
     "Your guest scans move to this account. Enter your name and email; you choose a password after you confirm the email.":
         "Lilipat sa account na ito ang iyong mga scan bilang bisita. Ilagay ang iyong pangalan at email; pipili ka ng password pagkatapos mong kumpirmahin ang email.",
     "Your email is confirmed. Now choose a password to finish your account.":
