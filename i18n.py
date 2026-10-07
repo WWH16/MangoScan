@@ -363,6 +363,8 @@ FIL = {
     "Welcome, {name}. Your scans will now be saved.": "Maligayang pagdating, {name}. Mase-save na ang iyong mga scan.",
     "Check your email": "Tingnan ang iyong email",
     "Check your email.": "Tingnan ang iyong email.",
+    "We sent a link to {email}. Open it to confirm your email, then choose a password.":
+        "Nagpadala kami ng link sa {email}. Buksan ito para makumpirma ang iyong email, saka pumili ng password.",
     "We sent a link to {email}. Open it to confirm your account, then log in.":
         "Nagpadala kami ng link sa {email}. Buksan ito para kumpirmahin ang iyong account, saka mag-log in.",
     "Enter the email you signed up with.": "Ilagay ang email na ginamit mo sa pag-sign up.",

@@ -75,6 +75,7 @@ def _store_session(sb_session, user=None):
 
 def _clear_session():
     session.pop("auth", None)
+    session.pop("upgrade_pending", None)
 
 
 def _load_user():
@@ -271,6 +272,7 @@ def login():
                     return render_template("login.html", form=form, errors=errors, resend_email=form["email"])
             else:
                 _store_session(res.session, res.user)
+                session.pop("upgrade_pending", None)
                 return redirect(_safe_next())
     return render_template("login.html", form=form, errors=errors)
 
@@ -357,7 +359,8 @@ def resend():
     else:
         try:
             client().auth.resend({
-                "type": "signup",
+                # A guest adding an email is an email change, not a new sign-up
+                "type": "email_change" if session.get("upgrade_pending") else "signup",
                 "email": email,
                 "options": {"email_redirect_to": url_for("accounts.confirm", _external=True)},
             })
@@ -379,7 +382,9 @@ def check_email():
     return render_template("auth_message.html",
                            title=t("Check your email"),
                            heading=t("Check your email."),
-                           body=t("We sent a link to {email}. Open it to confirm your account, then log in.", email=email),
+                           body=t("We sent a link to {email}. Open it to confirm your email, then choose a password.", email=email)
+                           if session.get("upgrade_pending") else
+                           t("We sent a link to {email}. Open it to confirm your account, then log in.", email=email),
                            resend_email=email)
 
 
@@ -697,7 +702,17 @@ def account_delete():
     _check_csrf()
     # The user must type their name (or email, when no name is set), like deleting a GitHub repository
     expected = GUEST_CONFIRM_WORD if g.user.get("anon") else (g.user.get("name") or g.user.get("email") or "")
-    if _normalise(request.form.get("confirm", "")) != _normalise(expected):
+    if g.user.get("anon"):
+        # The email may have been confirmed on another phone since this cookie was written;
+        # then "guest" must not delete what is now a permanent account
+        try:
+            res = client().auth.get_user(g.user["at"])
+            still_guest = bool(res and res.user and res.user.is_anonymous)
+        except Exception:
+            still_guest = False
+        if not still_guest:
+            expected = None
+    if expected is None or _normalise(request.form.get("confirm", "")) != _normalise(expected):
         flash(t("What you typed does not match. Your account was not deleted."), "error")
         return redirect(url_for("accounts.settings"))
     sb = client(g.user["at"])

@@ -179,5 +179,48 @@ class UpgradeGuestTest(GuestTestCase):
         self.assertIn("Your guest scans stay with the guest", res.get_data(as_text=True))
 
 
+class ReviewFixesTest(GuestTestCase):
+    def test_resend_for_upgrading_guest_sends_email_change(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        self.client.post("/auth/resend", data={"csrf_token": self.csrf(), "email": "juan@b.co"})
+        self.assertEqual(self.sb.auth.resend.call_args[0][0]["type"], "email_change")
+
+    def test_check_email_for_upgrading_guest_says_choose_password(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+            s["pending_email"] = "juan@b.co"
+        html = self.client.get("/auth/check-email").get_data(as_text=True)
+        self.assertIn("then choose a password", html)
+        self.assertNotIn("then log in", html)
+
+    def test_leaving_guest_mode_clears_upgrade_pending(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        self.client.post("/logout", data={"csrf_token": self.csrf()})
+        with self.client.session_transaction() as s:
+            self.assertNotIn("upgrade_pending", s)
+
+    def test_login_clears_upgrade_pending(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        user = FakeUser("u2", "a@b.co", anon=False)
+        self.sb.auth.sign_in_with_password.return_value = SimpleNamespace(session=fake_session(user), user=user)
+        self.client.post("/login", data={"csrf_token": self.csrf(), "email": "a@b.co", "password": "secret123"})
+        with self.client.session_transaction() as s:
+            self.assertNotIn("upgrade_pending", s)
+
+    def test_guest_word_cannot_delete_account_upgraded_elsewhere(self):
+        # The cookie still says guest, but the email was confirmed on another phone
+        self.sign_in(anon=True)
+        self.sb.auth.get_user.return_value = SimpleNamespace(user=FakeUser(email="juan@b.co", anon=False))
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": "guest"})
+        self.sb.rpc.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
