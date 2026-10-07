@@ -27,6 +27,7 @@ SIGNED_URL_TTL = 60 * 60  # seconds a photo link stays valid
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 MIN_PASSWORD = 8
+GUEST_CONFIRM_WORD = "guest"  # guests have no name or email to type
 
 
 # ---------- Supabase client ----------
@@ -102,7 +103,8 @@ def _attach_user():
 
 @bp.app_context_processor
 def _template_globals():
-    return {"user": g.get("user"), "accounts_enabled": enabled(), "csrf_token": csrf_token}
+    return {"user": g.get("user"), "accounts_enabled": enabled(), "csrf_token": csrf_token,
+            "guest_confirm_word": GUEST_CONFIRM_WORD}
 
 
 def login_required(view):
@@ -673,7 +675,7 @@ def account_delete():
     """Remove the user's account (their scan rows go with it), then their photos."""
     _check_csrf()
     # The user must type their name (or email, when no name is set), like deleting a GitHub repository
-    expected = g.user.get("name") or g.user.get("email") or ""
+    expected = GUEST_CONFIRM_WORD if g.user.get("anon") else (g.user.get("name") or g.user.get("email") or "")
     if _normalise(request.form.get("confirm", "")) != _normalise(expected):
         flash(t("What you typed does not match. Your account was not deleted."), "error")
         return redirect(url_for("accounts.settings"))

@@ -231,6 +231,8 @@ FIL = {
     "Get a new link": "Kumuha ng bagong link",
 
     # ---------- My scans ----------
+    "You are using MangoScan as a guest. {signup} to keep these scans on any phone.":
+        "Ginagamit mo ang MangoScan bilang bisita. {signup} para makita ang mga scan na ito sa kahit anong phone.",
     "My scans.": "Aking mga scan.",
     "Your scans could not be loaded. Check the connection and reload the page.":
         "Hindi ma-load ang iyong mga scan. Tingnan ang koneksyon at i-reload ang pahina.",
@@ -246,6 +248,14 @@ FIL = {
     "Delete account": "Burahin ang account",
 
     # ---------- Settings ----------
+    "Signed in as": "Naka-sign in bilang",
+    "Guest": "Bisita",
+    "Leave guest mode": "Umalis sa guest mode",
+    "Your guest scans will be lost when you leave guest mode or clear this browser. Create an account first to keep them.":
+        "Mawawala ang iyong mga scan bilang bisita kapag umalis ka sa guest mode o binura ang data ng browser na ito. Gumawa muna ng account para hindi mawala ang mga ito.",
+    "Delete guest scans": "Burahin ang mga scan bilang bisita",
+    "Permanently delete all your guest scans and their photos.":
+        "Permanenteng burahin ang lahat ng iyong scan bilang bisita at ang mga litrato nito.",
     "Settings": "Settings",
     "Language, app install and your account.": "Wika, pag-install ng app at ang iyong account.",
     "Choose the language MangoScan uses on this phone.": "Piliin ang wikang gagamitin ng MangoScan sa phone na ito.",

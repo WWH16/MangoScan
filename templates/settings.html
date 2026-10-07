@@ -91,7 +91,34 @@
     <!-- Account -->
     <section class="set-group" aria-labelledby="grp-account">
         <h2 class="set-group-title" id="grp-account">{{ _("Account") }}</h2>
-        {% if user %}
+        {% if user and user.anon %}
+        <div class="set-list">
+            <div class="set-row">
+                <p class="set-text set-text-fit"><span class="set-name">{{ _("Signed in as") }}</span></p>
+                <span class="set-value set-value-plain">{{ _("Guest") }}</span>
+            </div>
+            <a class="set-row set-action" href="{{ url_for('accounts.signup', next=url_for('accounts.settings')) }}">
+                <span class="set-text"><span class="set-name">{{ _("Create account") }}</span></span>
+                {{ chevron }}
+            </a>
+            <form class="set-row-form" method="POST" action="{{ url_for('accounts.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="set-row set-action" aria-describedby="guest-leave-note">
+                    <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+                    <span class="set-name">{{ _("Leave guest mode") }}</span>
+                </button>
+            </form>
+        </div>
+        <p class="set-foot" id="guest-leave-note">{{ _("Your guest scans will be lost when you leave guest mode or clear this browser. Create an account first to keep them.") }}</p>
+
+        <div class="set-list set-list-danger" id="danger-zone">
+            <button type="button" class="set-row set-action set-danger" id="btn-account-delete" aria-haspopup="dialog" aria-describedby="delete-note">
+                <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>
+                <span class="set-name">{{ _("Delete guest scans") }}</span>
+            </button>
+        </div>
+        <p class="set-foot" id="delete-note">{{ _("Permanently delete all your guest scans and their photos.") }}</p>
+        {% elif user %}
         <div class="set-list">
             <details class="set-disclosure"{% if errors.name or errors.form_profile %} open{% endif %}>
                 <summary class="set-row">
@@ -161,7 +188,7 @@
 </div>
 
 {% if user %}
-{% set confirm_word = user.name or user.email %}
+{% set confirm_word = guest_confirm_word if user.anon else (user.name or user.email) %}
 <dialog class="modal" id="account-dialog" aria-labelledby="account-title" aria-describedby="account-desc">
     <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

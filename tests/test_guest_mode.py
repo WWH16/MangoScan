@@ -88,5 +88,43 @@ class StartGuestTest(GuestTestCase):
             self.assertIn('action="/guest"', html, path)
 
 
+class GuestSettingsTest(GuestTestCase):
+    def test_guest_delete_rejects_empty_confirm(self):
+        self.sign_in(anon=True)
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": ""})
+        self.sb.rpc.assert_not_called()
+        self.assertIsNotNone(self.auth())
+
+    def test_guest_delete_accepts_guest_word(self):
+        self.sign_in(anon=True)
+        self.sb.table.return_value.select.return_value.execute.return_value = SimpleNamespace(data=[])
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": " Guest "})
+        self.sb.rpc.assert_called_once_with("delete_own_account")
+        self.assertIsNone(self.auth())
+
+    def test_settings_for_guest(self):
+        self.sign_in(anon=True)
+        html = self.client.get("/settings").get_data(as_text=True)
+        self.assertIn("Leave guest mode", html)
+        self.assertIn("Your guest scans will be lost", html)
+        self.assertIn("Create account", html)
+        self.assertNotIn("Change password", html)
+        self.assertIn('data-expect="guest"', html)
+
+    def test_settings_for_email_user_unchanged(self):
+        self.sign_in(anon=False, email="a@b.co", name="Juan")
+        html = self.client.get("/settings").get_data(as_text=True)
+        self.assertIn("Log out", html)
+        self.assertNotIn("Leave guest mode", html)
+        self.assertIn('data-expect="Juan"', html)
+
+    def test_scans_page_tells_guest_to_create_account(self):
+        self.sign_in(anon=True)
+        q = self.sb.table.return_value.select.return_value.order.return_value.limit.return_value
+        q.execute.return_value = SimpleNamespace(data=[])
+        html = self.client.get("/scans").get_data(as_text=True)
+        self.assertIn("You are using MangoScan as a guest.", html)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,12 @@
 <section class="scans" aria-labelledby="scans-heading">
     <div class="scans-head">
         <h1 id="scans-heading" class="headline">{{ _("My scans.") }}</h1>
+        {% if user.anon %}
+        <p class="save-line">{{ _html("You are using MangoScan as a guest. {signup} to keep these scans on any phone.",
+            signup=_html('<a href="' ~ url_for('accounts.signup', next=url_for('accounts.scans')) ~ '">' ~ _('Create an account') ~ '</a>')) }}</p>
+        {% else %}
         <p class="lede">{{ user.name or user.email }}{% if user.name %} &middot; {{ user.email }}{% endif %}</p>
+        {% endif %}
     </div>
 
     {% if load_failed %}
