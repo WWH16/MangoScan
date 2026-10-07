@@ -67,6 +67,7 @@ def _store_session(sb_session, user=None):
         "uid": user.id,
         "email": user.email,
         "name": (meta.get("full_name") or "").strip(),
+        "anon": bool(getattr(user, "is_anonymous", False)),
     }
     session.permanent = True
 
@@ -271,6 +272,28 @@ def logout():
     return redirect(url_for("index"))
 
 
+@bp.route("/guest", methods=["POST"])
+def guest():
+    """Start guest mode: an anonymous Supabase user whose scans are saved like an account's."""
+    _require_enabled()
+    _check_csrf()
+    if g.user:
+        return redirect(_safe_next())
+    if _too_many():
+        flash(t("Too many tries. Wait a few minutes, then try again."), "error")
+        return redirect(request.referrer or url_for("index"))
+    try:
+        res = client().auth.sign_in_anonymously()
+    except Exception as exc:
+        # Anonymous sign-ins switched off in Supabase, or its per-IP limit reached
+        current_app.logger.warning("Guest sign-in failed: %s", exc)
+        flash(t("Guest mode is not available right now. You can still scan without saving, or create an account."), "error")
+        return redirect(request.referrer or url_for("index"))
+    _store_session(res.session, res.user)
+    flash(t("You are now a guest. Your scans are saved on this phone's MangoScan."))
+    return redirect(_safe_next())
+
+
 # ---------- Email links and password reset ----------
 
 @bp.route("/forgot", methods=["GET", "POST"])
@@ -356,6 +379,7 @@ def _store_tokens(access_token, refresh_token, expires_at):
         "uid": res.user.id,
         "email": res.user.email,
         "name": (meta.get("full_name") or "").strip(),
+        "anon": bool(getattr(res.user, "is_anonymous", False)),
     }
     session.permanent = True
 

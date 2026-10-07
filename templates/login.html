@@ -33,7 +33,11 @@
         <a class="link-btn" href="{{ url_for('accounts.signup', next=request.args.get('next')) }}">{{ _("Create an account") }}</a>
         <a class="link-btn" href="{{ url_for('accounts.forgot', email=form.email or None) }}">{{ _("Forgot password?") }}</a>
     </div>
-    <p class="auth-foot">{{ _("You can scan without an account.") }} <a href="{{ url_for('scan') }}">{{ _("Scan a mango") }}</a></p>
+    <form class="auth-foot" method="POST" action="{{ url_for('accounts.guest') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline btn-block">{{ _("Continue as guest") }}</button>
+        <p class="field-hint">{{ _("No email needed. Your scans are saved on this phone. Create an account later to keep them for good.") }}</p>
+    </form>
 </section>
 {% endblock %}
 

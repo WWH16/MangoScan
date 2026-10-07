@@ -148,7 +148,15 @@
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="m3 3 18 18"/></svg>
                 {{ _("No account needed") }}
             </dt>
-            <dd>{{ _("Anyone can scan. Nothing is kept unless you log in.") }}</dd>
+            <dd>
+                {{ _("Anyone can scan. Nothing is kept unless you log in or continue as a guest.") }}
+                {% if accounts_enabled and not user %}
+                <form method="POST" action="{{ url_for('accounts.guest') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="link-btn">{{ _("Continue as guest") }}</button>
+                </form>
+                {% endif %}
+            </dd>
         </div>
         {% if accounts_enabled %}
         <div class="fact">

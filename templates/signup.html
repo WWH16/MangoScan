@@ -30,6 +30,11 @@
     <div class="minor-actions">
         <a class="link-btn" href="{{ url_for('accounts.login', next=request.args.get('next')) }}">{{ _("I already have an account") }}</a>
     </div>
+    <form class="auth-foot" method="POST" action="{{ url_for('accounts.guest') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline btn-block">{{ _("Continue as guest") }}</button>
+        <p class="field-hint">{{ _("No email needed. Your scans are saved on this phone. Create an account later to keep them for good.") }}</p>
+    </form>
 </section>
 {% endblock %}
 

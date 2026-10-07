@@ -16,7 +16,7 @@ MangoScan checks one mango from one photo (phone camera, live viewfinder, or a s
 
 Before classifying, it screens out photos it cannot judge (no single fruit in frame, too blurry, too dark or too bright) and asks for a better photo instead of guessing.
 
-The site opens on a landing page that explains the three answers in plain words; the scanner itself lives at `/scan`, which the installed app opens directly. Anyone can scan without an account. People who sign up (email and password, through Supabase Auth) get every scan saved with its photos under "My scans", can delete single scans, and can delete their whole account. The app can be installed to the phone's home screen.
+The site opens on a landing page that explains the three answers in plain words; the scanner itself lives at `/scan`, which the installed app opens directly. Anyone can scan without an account. A visitor can also continue as a guest: MangoScan creates an anonymous account on that phone, so scans are saved under "My scans" exactly like an email account, and the guest can add an email later to keep them. People who sign up (email and password, through Supabase Auth) get every scan saved with its photos under "My scans", can delete single scans, and can delete their whole account. The app can be installed to the phone's home screen.
 
 ## Brand Personality
 
@@ -50,4 +50,5 @@ The site opens on a landing page that explains the three answers in plain words;
 
 - Scanning without an account stores nothing on the server; the result exists only in the page.
 - Saved scans and photos are private to their owner (Row Level Security and a private Storage bucket).
+- Guest scans are saved like account scans and are private to that guest. A guest who leaves guest mode or clears the browser loses access to them.
 - Users can delete any scan, or their whole account with all scans and photos, in line with the Philippine Data Privacy Act (RA 10173).

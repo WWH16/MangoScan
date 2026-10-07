@@ -66,8 +66,8 @@ FIL = {
         "Bawat scan ay nagtatapos sa isa sa mga ito, kasama ang susunod na gagawin.",
     "Good to know": "Mabuting malaman",
     "No account needed": "Hindi kailangan ng account",
-    "Anyone can scan. Nothing is kept unless you log in.":
-        "Kahit sino ay puwedeng mag-scan. Walang itinatago maliban kung naka-log in ka.",
+    "Anyone can scan. Nothing is kept unless you log in or continue as a guest.":
+        "Kahit sino ay puwedeng mag-scan. Walang itinatago maliban kung mag-log in ka o magpatuloy bilang bisita.",
     "Save your scans": "I-save ang iyong mga scan",
     "With a free account, every scan and its photos are kept under My scans.":
         "Kapag may libreng account, nakatago ang bawat scan at ang mga litrato nito sa Aking mga scan.",
@@ -190,7 +190,13 @@ FIL = {
     "Password": "Password",
     "Create an account": "Gumawa ng account",
     "Forgot password?": "Nakalimutan ang password?",
-    "You can scan without an account.": "Puwede kang mag-scan kahit walang account.",
+    "Continue as guest": "Magpatuloy bilang bisita",
+    "No email needed. Your scans are saved on this phone. Create an account later to keep them for good.":
+        "Hindi kailangan ng email. Naka-save ang iyong mga scan sa phone na ito. Gumawa ng account mamaya para hindi mawala ang mga ito.",
+    "Guest mode is not available right now. You can still scan without saving, or create an account.":
+        "Hindi pa magagamit ang guest mode ngayon. Puwede ka pa ring mag-scan nang hindi nagse-save, o gumawa ng account.",
+    "You are now a guest. Your scans are saved on this phone's MangoScan.":
+        "Bisita ka na ngayon. Naka-save ang iyong mga scan sa MangoScan ng phone na ito.",
     "Create an account.": "Gumawa ng account.",
     "Free. Every mango you scan is saved, with its photo and what to do.":
         "Libre. Naka-save ang bawat manggang ini-scan mo, kasama ang litrato at ang dapat gawin.",
