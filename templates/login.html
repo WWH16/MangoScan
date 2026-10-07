@@ -20,6 +20,9 @@
     <p class="lede">{{ _("Your scans are saved to your account, so you can find them again on any phone.") }}</p>
 
     {{ form_error(errors) }}
+    {% if user and user.anon %}
+    <p class="field-hint">{{ _("Your guest scans stay with the guest and do not move to the account you log in to. To keep them, create an account instead.") }}</p>
+    {% endif %}
     {% if resend_email %}{{ resend_form(resend_email) }}{% endif %}
 
     <form class="auth-form" method="POST" action="{{ url_for('accounts.login', next=request.args.get('next')) }}" novalidate>
@@ -33,11 +36,13 @@
         <a class="link-btn" href="{{ url_for('accounts.signup', next=request.args.get('next')) }}">{{ _("Create an account") }}</a>
         <a class="link-btn" href="{{ url_for('accounts.forgot', email=form.email or None) }}">{{ _("Forgot password?") }}</a>
     </div>
+    {% if not (user and user.anon) %}
     <form class="auth-foot" method="POST" action="{{ url_for('accounts.guest') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline btn-block">{{ _("Continue as guest") }}</button>
         <p class="field-hint">{{ _("No email needed. Your scans are saved on this phone. Create an account later to keep them for good.") }}</p>
     </form>
+    {% endif %}
 </section>
 {% endblock %}
 

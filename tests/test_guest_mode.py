@@ -126,5 +126,58 @@ class GuestSettingsTest(GuestTestCase):
         self.assertIn("You are using MangoScan as a guest.", html)
 
 
+class UpgradeGuestTest(GuestTestCase):
+    def test_signup_form_for_guest_has_no_password_field(self):
+        self.sign_in(anon=True)
+        html = self.client.get("/signup").get_data(as_text=True)
+        self.assertIn("Your guest scans move to this account.", html)
+        self.assertNotIn('name="password"', html)
+
+    def test_guest_signup_adds_email_to_same_user(self):
+        self.sign_in(anon=True)
+        self.sb.auth.set_session.return_value = None
+        res = self.client.post("/signup", data={"csrf_token": self.csrf(), "name": "Juan", "email": "juan@b.co"})
+        self.assertEqual(res.status_code, 302)
+        self.assertTrue(res.headers["Location"].endswith("/auth/check-email"))
+        args, kwargs = self.sb.auth.update_user.call_args
+        self.assertEqual(args[0], {"email": "juan@b.co", "data": {"full_name": "Juan"}})
+        self.assertIn("email_redirect_to", args[1])
+        self.sb.auth.sign_up.assert_not_called()
+        with self.client.session_transaction() as s:
+            self.assertTrue(s["upgrade_pending"])
+            self.assertEqual(s["auth"]["uid"], "guest-1")
+
+    def test_guest_signup_with_taken_email_keeps_guest(self):
+        self.sign_in(anon=True)
+        self.sb.auth.set_session.return_value = None
+        self.sb.auth.update_user.side_effect = Exception("A user with this email address has already been registered")
+        res = self.client.post("/signup", data={"csrf_token": self.csrf(), "name": "Juan", "email": "juan@b.co"})
+        self.assertIn("An account with this email already exists. Log in instead.", res.get_data(as_text=True))
+        self.assertTrue(self.auth()["anon"])
+
+    def test_confirm_after_upgrade_asks_for_password(self):
+        self.sign_in(anon=True)
+        with self.client.session_transaction() as s:
+            s["upgrade_pending"] = True
+        user = FakeUser(email="juan@b.co", anon=False, name="Juan")
+        self.sb.auth.verify_otp.return_value = SimpleNamespace(session=fake_session(user), user=user)
+        res = self.client.get("/auth/confirm?token_hash=abc&type=email_change")
+        self.assertTrue(res.headers["Location"].endswith("/reset-password"))
+        self.assertFalse(self.auth()["anon"])
+        self.assertEqual(self.auth()["uid"], "guest-1")
+
+    def test_confirm_without_flag_goes_to_scan(self):
+        user = FakeUser(email="juan@b.co", anon=False)
+        self.sb.auth.verify_otp.return_value = SimpleNamespace(session=fake_session(user), user=user)
+        res = self.client.get("/auth/confirm?token_hash=abc&type=email_change")
+        self.assertTrue(res.headers["Location"].endswith("/scan"))
+
+    def test_guest_can_open_login_and_is_warned(self):
+        self.sign_in(anon=True)
+        res = self.client.get("/login")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("Your guest scans stay with the guest", res.get_data(as_text=True))
+
+
 if __name__ == "__main__":
     unittest.main()

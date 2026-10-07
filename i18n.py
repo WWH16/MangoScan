@@ -191,6 +191,12 @@ FIL = {
     "Create an account": "Gumawa ng account",
     "Forgot password?": "Nakalimutan ang password?",
     "Continue as guest": "Magpatuloy bilang bisita",
+    "Your guest scans move to this account. Enter your name and email; you choose a password after you confirm the email.":
+        "Lilipat sa account na ito ang iyong mga scan bilang bisita. Ilagay ang iyong pangalan at email; pipili ka ng password pagkatapos mong kumpirmahin ang email.",
+    "Your email is confirmed. Now choose a password to finish your account.":
+        "Nakumpirma na ang iyong email. Pumili na ng password para matapos ang iyong account.",
+    "Your guest scans stay with the guest and do not move to the account you log in to. To keep them, create an account instead.":
+        "Mananatili sa bisita ang iyong mga scan at hindi lilipat sa account na papasukan mo. Para hindi mawala ang mga ito, gumawa na lang ng account.",
     "No email needed. Your scans are saved on this phone. Create an account later to keep them for good.":
         "Hindi kailangan ng email. Naka-save ang iyong mga scan sa phone na ito. Gumawa ng account mamaya para hindi mawala ang mga ito.",
     "Guest mode is not available right now. You can still scan without saving, or create an account.":

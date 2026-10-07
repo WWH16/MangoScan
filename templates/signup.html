@@ -15,7 +15,7 @@
 {% block content %}
 <section class="auth" aria-labelledby="auth-heading">
     <h1 id="auth-heading" class="headline">{{ _("Create an account.") }}</h1>
-    <p class="lede">{{ _("Free. Every mango you scan is saved, with its photo and what to do.") }}</p>
+    <p class="lede">{% if is_guest %}{{ _("Your guest scans move to this account. Enter your name and email; you choose a password after you confirm the email.") }}{% else %}{{ _("Free. Every mango you scan is saved, with its photo and what to do.") }}{% endif %}</p>
 
     {{ form_error(errors) }}
 
@@ -23,18 +23,22 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {{ field("name", _("Full name"), errors, value=form.name, autocomplete="name", autofocus=True) }}
         {{ field("email", _("Email"), errors, type="email", value=form.email, autocomplete="email") }}
+        {% if not is_guest %}
         {{ field("password", _("Password"), errors, type="password", autocomplete="new-password", hint=_("At least 8 characters.")) }}
+        {% endif %}
         {{ submit(_("Create account")) }}
     </form>
 
     <div class="minor-actions">
         <a class="link-btn" href="{{ url_for('accounts.login', next=request.args.get('next')) }}">{{ _("I already have an account") }}</a>
     </div>
+    {% if not is_guest %}
     <form class="auth-foot" method="POST" action="{{ url_for('accounts.guest') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline btn-block">{{ _("Continue as guest") }}</button>
         <p class="field-hint">{{ _("No email needed. Your scans are saved on this phone. Create an account later to keep them for good.") }}</p>
     </form>
+    {% endif %}
 </section>
 {% endblock %}
 

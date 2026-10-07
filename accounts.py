@@ -187,15 +187,16 @@ def _auth_message(exc):
 @bp.route("/signup", methods=["GET", "POST"])
 def signup():
     _require_enabled()
-    if g.user:
+    if g.user and not g.user.get("anon"):
         return redirect(_safe_next())
     form = {"name": "", "email": ""}
     errors = {}
+    is_guest = bool(g.user and g.user.get("anon"))
     if request.method == "POST":
         _check_csrf()
         if _too_many():
             errors["form"] = t("Too many tries. Wait a few minutes, then try again.")
-            return render_template("signup.html", form=form, errors=errors), 429
+            return render_template("signup.html", form=form, errors=errors, is_guest=is_guest), 429
         form["name"] = request.form.get("name", "").strip()
         form["email"] = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
@@ -203,9 +204,23 @@ def signup():
             errors["name"] = t("Enter your name.")
         if not EMAIL_RE.match(form["email"]):
             errors["email"] = t("Enter an email address like name@example.com.")
-        if len(password) < MIN_PASSWORD:
+        if not is_guest and len(password) < MIN_PASSWORD:
             errors["password"] = t("Use at least {n} characters.", n=MIN_PASSWORD)
-        if not errors:
+        if not errors and is_guest:
+            try:
+                # Same user id, so every guest scan stays with the new account.
+                # Supabase sets the password only after the email is confirmed.
+                _session_client().auth.update_user(
+                    {"email": form["email"], "data": {"full_name": form["name"]}},
+                    {"email_redirect_to": url_for("accounts.confirm", _external=True)},
+                )
+            except Exception as exc:
+                errors["form"] = _auth_message(exc)
+            else:
+                session["upgrade_pending"] = True
+                session["pending_email"] = form["email"]
+                return redirect(url_for("accounts.check_email"))
+        elif not errors:
             try:
                 res = client().auth.sign_up({
                     "email": form["email"],
@@ -225,13 +240,13 @@ def signup():
                 # Redirect, so reloading the page does not send the form (and another email) again
                 session["pending_email"] = form["email"]
                 return redirect(url_for("accounts.check_email"))
-    return render_template("signup.html", form=form, errors=errors)
+    return render_template("signup.html", form=form, errors=errors, is_guest=is_guest)
 
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     _require_enabled()
-    if g.user:
+    if g.user and not g.user.get("anon"):
         return redirect(_safe_next())
     form = {"email": ""}
     errors = {}
@@ -407,6 +422,9 @@ def confirm():
                                    body=t("Open the newest email from MangoScan, or ask for a new link.")), 400
         if kind == "recovery":
             return redirect(url_for("accounts.reset_password"))
+        if session.pop("upgrade_pending", False):
+            flash(t("Your email is confirmed. Now choose a password to finish your account."))
+            return redirect(url_for("accounts.reset_password"))
         flash(t("Your email is confirmed. Your scans will now be saved."))
         return redirect(url_for("scan"))
 
@@ -426,6 +444,9 @@ def confirm():
     if res.session:
         _store_session(res.session, res.user)
     if kind == "recovery":
+        return redirect(url_for("accounts.reset_password"))
+    if session.pop("upgrade_pending", False):
+        flash(t("Your email is confirmed. Now choose a password to finish your account."))
         return redirect(url_for("accounts.reset_password"))
     flash(t("Your email is confirmed. Your scans will now be saved."))
     return redirect(url_for("scan"))
