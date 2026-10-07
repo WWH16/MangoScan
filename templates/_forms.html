@@ -52,7 +52,7 @@
 {% endmacro %}
 
 {% macro guest_form(note, form_class="", btn_class="") %}
-<form class="guest-form {{ form_class }}" method="POST" action="{{ url_for('accounts.guest') }}">
+<form class="guest-form {{ form_class }}" method="POST" action="{{ url_for('accounts.guest', next=request.args.get('next')) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-outline {{ btn_class }}" aria-describedby="guest-note">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>

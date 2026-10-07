@@ -101,9 +101,9 @@
                 <span class="set-text"><span class="set-name">{{ _("Create account") }}</span></span>
                 {{ chevron }}
             </a>
-            <form class="set-row-form" method="POST" action="{{ url_for('accounts.logout') }}">
+            <form class="set-row-form" id="leave-form" method="POST" action="{{ url_for('accounts.logout') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="set-row set-action" aria-describedby="guest-leave-note">
+                <button type="submit" class="set-row set-action" aria-haspopup="dialog" aria-describedby="guest-leave-note">
                     <svg class="icon set-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
                     <span class="set-name">{{ _("Leave guest mode") }}</span>
                 </button>
@@ -188,12 +188,17 @@
 </div>
 
 {% if user %}
-{% set confirm_word = guest_confirm_word if user.anon else (user.name or user.email) %}
+{% set confirm_word = _(guest_confirm_word) if user.anon else (user.name or user.email) %}
 <dialog class="modal" id="account-dialog" aria-labelledby="account-title" aria-describedby="account-desc">
     <form method="POST" action="{{ url_for('accounts.account_delete') }}" class="modal-body" id="account-form" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if user.anon %}
+        <h2 class="modal-title" id="account-title">{{ _("Delete your guest scans?") }}</h2>
+        <p class="modal-desc" id="account-desc">{{ _("All your guest scans and their photos will be deleted for good. You can't undo this.") }}</p>
+        {% else %}
         <h2 class="modal-title" id="account-title">{{ _("Delete your account?") }}</h2>
         <p class="modal-desc" id="account-desc">{{ _("Your account, all your saved scans and their photos will be deleted for good. You can't undo this.") }}</p>
+        {% endif %}
         <div class="field confirm-field">
             <label for="f-confirm">{{ _html("To confirm, type {word} below.", word=_html('<span class="confirm-word">') ~ confirm_word ~ _html('</span>')) }}</label>
             <input id="f-confirm" name="confirm" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
@@ -202,9 +207,22 @@
         </div>
         <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="btn-account-cancel">{{ _("Cancel") }}</button>
-            <button type="submit" class="btn btn-destructive" id="btn-account-confirm" data-loading-text="{{ _('Deleting…') }}" disabled><span>{{ _("Delete my account") }}</span></button>
+            <button type="submit" class="btn btn-destructive" id="btn-account-confirm" data-loading-text="{{ _('Deleting…') }}" disabled><span>{{ _("Delete guest scans") if user.anon else _("Delete my account") }}</span></button>
         </div>
     </form>
+</dialog>
+{% endif %}
+
+{% if user and user.anon %}
+<dialog class="modal" id="leave-dialog" aria-labelledby="leave-title" aria-describedby="leave-desc">
+    <div class="modal-body">
+        <h2 class="modal-title" id="leave-title">{{ _("Leave guest mode?") }}</h2>
+        <p class="modal-desc" id="leave-desc">{{ _("Your guest scans and their photos will be lost for good. Create an account first to keep them.") }}</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="btn-leave-cancel">{{ _("Cancel") }}</button>
+            <button type="button" class="btn btn-destructive" id="btn-leave-confirm">{{ _("Leave guest mode") }}</button>
+        </div>
+    </div>
 </dialog>
 {% endif %}
 {% endblock %}
@@ -269,6 +287,17 @@
         paint();
         guidesRow.hidden = false;
         resetBtn.hidden = false;
+    }
+
+    // Leaving guest mode loses every guest scan, so ask first. Without JavaScript the form posts as before.
+    const leaveForm = document.getElementById('leave-form');
+    const leaveDialog = document.getElementById('leave-dialog');
+    if (leaveForm && leaveDialog) {
+        leaveForm.addEventListener('submit', (e) => { e.preventDefault(); leaveDialog.showModal(); });
+        document.getElementById('btn-leave-cancel').addEventListener('click', () => leaveDialog.close());
+        document.getElementById('btn-leave-confirm').addEventListener('click', () => leaveForm.submit());
+        leaveDialog.addEventListener('click', (e) => { if (e.target === leaveDialog) leaveDialog.close(); });
+        leaveDialog.addEventListener('close', () => leaveForm.querySelector('button').focus());
     }
 
     // Delete account dialog

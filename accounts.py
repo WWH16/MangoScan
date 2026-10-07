@@ -15,7 +15,7 @@ from urllib.parse import urlsplit
 from datetime import datetime, timezone
 
 import ratelimit
-from i18n import t
+from i18n import FIL, t
 from flask import (
     Blueprint, abort, current_app, flash, g, redirect, render_template,
     request, session, url_for,
@@ -707,8 +707,9 @@ def account_delete():
     """Remove the user's account (their scan rows go with it), then their photos."""
     _check_csrf()
     # The user must type their name (or email, when no name is set), like deleting a GitHub repository
-    expected = GUEST_CONFIRM_WORD if g.user.get("anon") else (g.user.get("name") or g.user.get("email") or "")
     if g.user.get("anon"):
+        # The dialog shows the word in the visitor's language; accept either language
+        expected = {GUEST_CONFIRM_WORD, FIL[GUEST_CONFIRM_WORD]}
         # The email may have been confirmed on another phone since this cookie was written;
         # then "guest" must not delete what is now a permanent account
         try:
@@ -717,8 +718,10 @@ def account_delete():
         except Exception:
             still_guest = False
         if not still_guest:
-            expected = None
-    if expected is None or _normalise(request.form.get("confirm", "")) != _normalise(expected):
+            expected = set()
+    else:
+        expected = {g.user.get("name") or g.user.get("email") or ""}
+    if _normalise(request.form.get("confirm", "")) not in {_normalise(w) for w in expected if w}:
         flash(t("What you typed does not match. Your account was not deleted."), "error")
         return redirect(url_for("accounts.settings"))
     sb = client(g.user["at"])

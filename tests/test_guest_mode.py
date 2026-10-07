@@ -416,5 +416,58 @@ class GuestEdgeCasesTest(GuestTestCase):
         self.assertNotIn("Leave guest mode", html)
 
 
+class MinorFixesTest(GuestTestCase):
+    def guest_settings(self):
+        self.sign_in(anon=True)
+        return self.client.get("/settings").get_data(as_text=True)
+
+    def test_guest_button_keeps_next_page(self):
+        html = self.client.get("/login?next=/scans").get_data(as_text=True)
+        self.assertIn('action="/guest?next=/scans"', html)
+
+    def test_guest_delete_dialog_talks_about_guest_scans(self):
+        html = self.guest_settings()
+        self.assertIn("Delete your guest scans?", html)
+        self.assertNotIn("Delete your account?", html)
+
+    def test_email_user_delete_dialog_unchanged(self):
+        self.sign_in(anon=False, email="a@b.co", name="Juan")
+        html = self.client.get("/settings").get_data(as_text=True)
+        self.assertIn("Delete your account?", html)
+        self.assertNotIn('id="leave-dialog"', html)
+
+    def test_filipino_guest_types_bisita(self):
+        self.client.set_cookie("lang", "fil")
+        self.assertIn('data-expect="bisita"', self.guest_settings())
+        self.sb.table.return_value.select.return_value.execute.return_value = SimpleNamespace(data=[])
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": " Bisita "})
+        self.sb.rpc.assert_called_once_with("delete_own_account")
+
+    def test_english_word_still_works_after_switching_language(self):
+        self.client.set_cookie("lang", "fil")
+        self.sign_in(anon=True)
+        self.sb.table.return_value.select.return_value.execute.return_value = SimpleNamespace(data=[])
+        self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": "guest"})
+        self.sb.rpc.assert_called_once_with("delete_own_account")
+
+    def test_guest_delete_still_rejects_empty_and_wrong_words(self):
+        self.sign_in(anon=True)
+        for word in ("", "bisita guest", "account"):
+            self.client.post("/account/delete", data={"csrf_token": self.csrf(), "confirm": word})
+        self.sb.rpc.assert_not_called()
+
+    def test_reset_password_never_shows_none(self):
+        self.sign_in(anon=True)
+        html = self.client.get("/reset-password").get_data(as_text=True)
+        self.assertNotIn("For None.", html)
+
+    def test_leave_guest_mode_asks_first(self):
+        html = self.guest_settings()
+        self.assertIn('id="leave-dialog"', html)
+        self.assertIn("Leave guest mode?", html)
+        # Without JavaScript the plain form still posts to /logout
+        self.assertIn('id="leave-form" method="POST" action="/logout"', html)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -264,6 +264,13 @@ FIL = {
     "Your guest scans will be lost when you leave guest mode or clear this browser. Create an account first to keep them.":
         "Mawawala ang iyong mga scan bilang bisita kapag umalis ka sa guest mode o binura ang data ng browser na ito. Gumawa muna ng account para hindi mawala ang mga ito.",
     "Delete guest scans": "Burahin ang mga scan bilang bisita",
+    "guest": "bisita",
+    "Delete your guest scans?": "Burahin ang iyong mga scan bilang bisita?",
+    "All your guest scans and their photos will be deleted for good. You can't undo this.":
+        "Mabubura nang tuluyan ang lahat ng iyong scan bilang bisita at ang mga litrato nito. Hindi na ito maibabalik.",
+    "Leave guest mode?": "Umalis sa guest mode?",
+    "Your guest scans and their photos will be lost for good. Create an account first to keep them.":
+        "Mawawala nang tuluyan ang iyong mga scan bilang bisita at ang mga litrato nito. Gumawa muna ng account para hindi mawala ang mga ito.",
     "Permanently delete all your guest scans and their photos.":
         "Permanenteng burahin ang lahat ng iyong scan bilang bisita at ang mga litrato nito.",
     "Settings": "Settings",
